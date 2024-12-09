@@ -19,15 +19,24 @@ const docRef = doc(db, "test", "room");
 const roomName = { 'A': '알파', 'B': '베타', 'C': '감마' };
 const roomState = { 0: '예약 가능', 1: '예약중', 2: '예약 불가' };
 const days = ['day1', 'day2', 'day3'];
+const day7 = ['일', '월', '화', '수', '목', '금', '토'];
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-function TablePage({ user, setTablePageOpen, tablePageOpen, setReserveOpen }) {
+function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation }) {
   const [selectedDay, setSelectedDay] = useState('day1'); // 초기 선택된 날짜는 'day1'
   const [timetable, setTimetable] = useState(''); // 초기 선택된 날짜는 'day1'
-
+  
+  const today = new Date();
+  const upcomingDays = {};
+  for (let i = 0; i <= 2; i++) {
+      const futureDate = new Date(today);
+      futureDate.setDate(today.getDate() + i); // i일 후 날짜 계산
+      upcomingDays[`day${i+1}`] = [day7[futureDate.getDay()], futureDate.getDate()]; // {day1: [9, 월], ..}
+  }
+  
   async function getTimetable() {
     const docSnap = await getDoc(docRef);
 
@@ -56,6 +65,13 @@ function TablePage({ user, setTablePageOpen, tablePageOpen, setReserveOpen }) {
     const minute = i % 2 === 0 ? '00' : '30';
     return `${hour}:${minute}`;
   });
+
+  const IndexToTime = function (index) {
+    const hours = String(Math.floor(index / 2) + 6).padStart(2, '0'); // 06부터 시작
+    const minutes = index % 2 === 0 ? '00' : '30'; // 0은 ':00', 1은 ':30'
+    const time = `${hours}:${minutes}`;
+    return time
+  }
 
   return (
     <React.Fragment>
@@ -88,8 +104,9 @@ function TablePage({ user, setTablePageOpen, tablePageOpen, setReserveOpen }) {
                     color: selectedDay === day ? '#092979' : 'white',
                     borderRadius: 2
                   }}
+              size='large'
                   onClick={() => handleDayChange(day)}              >
-                  {`Day ${day.charAt(3)}`} {/* day1 => 1, day2 => 2 형식으로 표시 */}
+                  {upcomingDays[day][0]} {/* day1 => 1, day2 => 2 형식으로 표시 */}
                 </Button>
               ))}
             </ButtonGroup>
@@ -101,7 +118,7 @@ function TablePage({ user, setTablePageOpen, tablePageOpen, setReserveOpen }) {
           </Box>
         </AppBar>
 
-        <Box container style={{
+        <Box  style={{
           padding: 5,
           display: 'flex',
           overflowX: 'auto',
@@ -110,14 +127,14 @@ function TablePage({ user, setTablePageOpen, tablePageOpen, setReserveOpen }) {
           flexDirection: 'row',
           backgroundColor: '#f6f7f8'
         }}>
-          <Box container style={{
+          <Box  style={{
             display: 'flex',
             width: 'auto',
             height: '100%',
             flexDirection: 'column',
             backgroundColor: '#f6f7f8'
           }}>
-            <Box container style={{
+            <Box  style={{
               display: 'flex',
               height: '60px',
               width: 'auto',
@@ -141,7 +158,7 @@ function TablePage({ user, setTablePageOpen, tablePageOpen, setReserveOpen }) {
             </Box> 
             {/* 최종 */}
 
-            <Box container style={{
+            <Box  style={{
               width: 'auto',
               flexDirection: 'column',
             }}>
@@ -179,7 +196,7 @@ function TablePage({ user, setTablePageOpen, tablePageOpen, setReserveOpen }) {
 
           </Box>
 
-          <Box container style={{
+          <Box  style={{
             display: 'flex',
             overflowX: 'auto',
             width: 'auto',
@@ -187,7 +204,7 @@ function TablePage({ user, setTablePageOpen, tablePageOpen, setReserveOpen }) {
             flexDirection: 'column',
             backgroundColor: '#f6f7f8'
           }}>
-            <Box container style={{
+            <Box  style={{
               display: 'flex',
               height: '60px',
               width: 'auto',
@@ -212,7 +229,7 @@ function TablePage({ user, setTablePageOpen, tablePageOpen, setReserveOpen }) {
               ))}
             </Box>
 
-            <Box container style={{
+            <Box  style={{
               // display: 'flex',
               // height: '100%',
               width: 'auto',
@@ -234,7 +251,15 @@ function TablePage({ user, setTablePageOpen, tablePageOpen, setReserveOpen }) {
                     {days.Reserve[selectedDay].map((status, index) => (
                       <Box
                         key={index}
-                        onClick={status ? null : () => setReserveOpen(true)}
+                        onClick={status ? null : () => openReservation({
+                          month: today.getMonth()+1,
+                          date: today.getDate(),
+                          roomText: key,
+                          roomName: roomName[key],
+                          time: IndexToTime(index),
+                          index: index,
+                          day: selectedDay
+                        }  )}
                         sx={{
                           flexShrink: 0,
                           cursor: "pointer",
@@ -245,8 +270,8 @@ function TablePage({ user, setTablePageOpen, tablePageOpen, setReserveOpen }) {
                           marginBottom: 0.2,
                           padding: 1,
                           borderBottom: '1px solid #ddd',
-                          backgroundColor: status === 0 ? 'white' : '#eef2ff',
-                          color: status === 0 ? '#3e5ba5' : status === 2 ? '#724c50' : '#888c96',
+                          backgroundColor: status === 0 ? 'white' : '#f0f9ff',
+                          color: status === 0 ? '#3e5ba5' : '#c5ccd9',
                           width: '80px',
                           height: '10vh',
                         }}>
@@ -264,4 +289,4 @@ function TablePage({ user, setTablePageOpen, tablePageOpen, setReserveOpen }) {
   );
 }
 
-export default TablePage;
+export default TablePageRow;

@@ -4,11 +4,12 @@ import { dummy } from './test/example.js';
 import QuickButton from './components/QuickButton';
 import MyPage from './components/MyPage';
 import Loginform from './components/Login';
-import TablePage from './components/TablePage.js';
+import TablePageRow from './components/TablePage_Row.js';
+import TablePageColmn from './components/TablePage_Column.js';
 import ReservationPage from './components/Reservation.js';
 import { db } from './test/firebase.js';
 
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
@@ -25,25 +26,19 @@ function App() {
   const [myPageOpen, setMyPageOpen] = useState(false);
   const [tablePageOpen, setTablePageOpen] = useState(false);
   const [reserveOpen, setReserveOpen] = useState(false);
+  const [currentTime, setCurrentTime] = useState(null);
   const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
   const isWideScreen = windowSize.width+windowSize.height > 1500;
   const [test, setTest] = useState("")
 
-  // async - await로 데이터 fetch 대기
-  async function getTest() {
-    // document에 대한 참조 생성
-    const docRef = doc(db, "test", "test");
-    // 참조에 대한 Snapshot 쿼리
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      setTest(docSnap.data());
-      console.log(test.test);
-    }
-  };
-
   useEffect(() => { 
-    getTest()
+    const docRef = doc(db, "test", "test");
+    const unsubscribe_Test = onSnapshot(docRef, (doc) => {
+      if (doc.exists()) {
+        setTest(doc.data());
+        console.log(test.test);
+      }
+    });
 
     const storedUser = sessionStorage.getItem("user");
     if (storedUser) {
@@ -86,8 +81,9 @@ function App() {
     return () => {
       window.removeEventListener('scroll', checkScrollPosition);
       window.removeEventListener('resize', handleResize);
+      unsubscribe_Test();
     };
-  }, [dailOpen]);
+  }, [dailOpen, test]);
 
   const sum_open = Object.values(open).reduce((acc, value) => acc + value, 0);
 
@@ -113,28 +109,7 @@ function App() {
         const ipResponse = await fetch("https://api.ipify.org?format=json");
         const ipData = await ipResponse.json();
 
-        // // 위치 가져오기
-        // const getLocation = () =>
-        //     new Promise((resolve, reject) => {
-        //         if (navigator.geolocation) {
-        //             navigator.geolocation.getCurrentPosition(
-        //                 (position) => {
-        //                     resolve({
-        //                         latitude: position.coords.latitude,
-        //                         longitude: position.coords.longitude,
-        //                     });
-        //                 },
-        //                 (error) => {
-        //                     reject(error);
-        //                 }
-        //             );
-        //         } else {
-        //             reject("Geolocation not supported");
-        //         }
-        //     });
-
         try {
-            // const location = await getLocation();
             const location = 'test';
             return { time, ip: ipData.ip, location };
         } catch (error) {
@@ -162,6 +137,11 @@ function App() {
     sessionStorage.removeItem("user");
   };
 
+  const openReservation = function(time) {
+    setReserveOpen(true)
+    setCurrentTime(time)
+  }
+
   return (
     <div className="App">
       <div className='bar'>
@@ -187,11 +167,11 @@ function App() {
         </div>
       </div>
       <div className='btns'>
-        <QuickButton user={user} open={open} func={btnclick} text="A" setReserveOpen={setReserveOpen}/>
+        <QuickButton user={user} open={open} func={btnclick} text="A" openReservation={openReservation} setDailOpen={setDailOpen}/>
         <div className="line" />
-        <QuickButton user={user} open={open} func={btnclick} text="B" setReserveOpen={setReserveOpen}/>
+        <QuickButton user={user} open={open} func={btnclick} text="B" openReservation={openReservation} setDailOpen={setDailOpen}/>
         <div className="line" />
-        <QuickButton user={user} open={open} func={btnclick} text="C" setReserveOpen={setReserveOpen}/>
+        <QuickButton user={user} open={open} func={btnclick} text="C" openReservation={openReservation} setDailOpen={setDailOpen}/>
       </div>
 
       <div className='fixbox'
@@ -210,8 +190,10 @@ function App() {
             예약시간표
           </Button>
         </div>
-        <TablePage user={user} setTablePageOpen={setTablePageOpen} tablePageOpen={tablePageOpen} setReserveOpen={setReserveOpen}/>
-
+        { windowSize.width > windowSize.height ?
+          <TablePageRow user={user} setTablePageOpen={setTablePageOpen} tablePageOpen={tablePageOpen} openReservation={openReservation}/>
+          : <TablePageColmn user={user} setTablePageOpen={setTablePageOpen} tablePageOpen={tablePageOpen} openReservation={openReservation}/>
+        }
         <div
           className='help'>
           <IconButton aria-label="Example">
@@ -223,7 +205,7 @@ function App() {
           </IconButton>
         </div>
       </div>
-      <ReservationPage user={user} setReserveOpen={setReserveOpen} reserveOpen={reserveOpen}/>
+      {currentTime && <ReservationPage user={user} setReserveOpen={setReserveOpen} reserveOpen={reserveOpen} currentTime={currentTime}/>}
     </div>
   );
 }

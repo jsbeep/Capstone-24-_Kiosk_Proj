@@ -26,26 +26,27 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
 const displaytext = {"A": "α", "B": "β", "C": "γ"}
+const roomName = { 'A': '알파', 'B': '베타', 'C': '감마' };
 const docRef_open = doc(db, "test", "open");
 const docRef_room = doc(db, "test", "room");
 
-function QuickButton({ user, open, func, text, setReserveOpen }) {
+function QuickButton({ user, open, func, text, openReservation, setDailOpen }) {
   const [dial, setDial] = useState(false);
   const [dial2, setDial2] = useState(false);
   const [lock, setLock] = useState(false);
-  const [time, setTime] = useState('00:00');
+  // const [time, setTime] = useState('00:00');
   const [timeTable, setTimetable] = useState([]);
   const winsize = window.innerWidth + window.innerHeight;
 
-  function getCurrentTime() {
-    const now = new Date();
-    const hours = now.getHours().toString().padStart(2, '0');  // 시간 (두 자리로 맞추기)
-    const minutes = now.getMinutes().toString().padStart(2, '0');  // 분 (두 자리로 맞추기)
-    setTime(`${hours}:${minutes}`);
-  }
+  // function getCurrentTime() {
+  //   const now = new Date();
+  //   const hours = now.getHours().toString().padStart(2, '0');  // 시간 (두 자리로 맞추기)
+  //   const minutes = now.getMinutes().toString().padStart(2, '0');  // 분 (두 자리로 맞추기)
+  //   setTime(`${hours}:${minutes}`);
+  // }
 
   useEffect(() => { 
-    getCurrentTime();
+    // getCurrentTime();
     const unsubscribe_room = onSnapshot(docRef_room, (doc) => {
       setTimetable(doc.data()[text]['Reserve']['day1']);
     });
@@ -58,7 +59,7 @@ function QuickButton({ user, open, func, text, setReserveOpen }) {
       unsubscribe_room();
       unsubscribe_lock();
     };
-  },[]);
+  },[text]);
 
   const updateDocument = async (field, value) => {
     try {
@@ -93,13 +94,7 @@ function QuickButton({ user, open, func, text, setReserveOpen }) {
     return time
   }
 
-  const TimeToIndex = function(time) {
-    const [hours, minutes] = time.split(':').map(Number);  // 시간을 ':' 기준으로 분리하고 숫자로 변환
-    const index = (hours - 6) * 2 + (minutes === 30 ? 1 : 0);  // 06:00부터 시작하는 인덱스 계산
-    return index;
-  };
-  
-  console.log(time, TimeToIndex(time), IndexToTime(TimeToIndex(time)))
+  const today = new Date();
 
   return (
     <List className="QB">
@@ -139,7 +134,16 @@ function QuickButton({ user, open, func, text, setReserveOpen }) {
                   {timeTable.map((value, index) => (
                     <Grid key={index}>
                       <Button
-                        onClick={user ? () => setReserveOpen(true) : () => setDial(true)}
+                        onClick={user ? () => openReservation(
+                          {
+                            month: today.getMonth()+1,
+                            date: today.getDate(),
+                            roomText: text,
+                            roomName: roomName[text],
+                            time: IndexToTime(index),
+                            index: index,
+                            day: 'day1'
+                          }                          ) : () => setDial(true)}
                         sx={{ bgcolor: 'white' }}
                         disabled={Boolean(value)}
                         variant="outlined"
@@ -181,8 +185,8 @@ function QuickButton({ user, open, func, text, setReserveOpen }) {
         </DialogContent>
         <DialogActions>
           {user && <Button onClick={() => setDial(false)}>아니오</Button>}
-          <Button onClick={user ? unlock : () => setDial(false)} autoFocus>
-            넹
+          <Button onClick={user ? unlock : () => {setDial(false);setDailOpen(true);}} autoFocus>
+            로그인
           </Button>
         </DialogActions>
       </Dialog>

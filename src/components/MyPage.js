@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { dummy } from '../test/example.js';
+// import { dummy } from '../test/example.js';
 import './Login.css';
 
 import Dialog from '@mui/material/Dialog';
@@ -9,50 +9,50 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
-import IconButton from '@mui/material/IconButton';
-import InputLabel from '@mui/material/InputLabel';
-import InputAdornment from '@mui/material/InputAdornment';
-import FormControl from '@mui/material/FormControl';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { FilledInput, TextField, Button, Grid2, Typography, Box, Link } from '@mui/material';
+// import IconButton from '@mui/material/IconButton';
+// import InputLabel from '@mui/material/InputLabel';
+// import InputAdornment from '@mui/material/InputAdornment';
+// import FormControl from '@mui/material/FormControl';
+// import Visibility from '@mui/icons-material/Visibility';
+// import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { TextField, Button, Grid2, Box, Link } from '@mui/material';
 
 
 function MyPage({user, logoutfunc, setMyPageOpen, myPageOpen}) {
   
   const [userId, setUserID] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  // const [password, setPassword] = useState('');
+  // const [error, setError] = useState('');
+  // const [showPassword, setShowPassword] = useState(false);
   const winsize = window.innerWidth + window.innerHeight;
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (!userId || !password) {
-      setError('모든 필드를 채워주세요.');
-      return;
-    }
+    // if (!userId || !password) {
+    //   setError('모든 필드를 채워주세요.');
+    //   return;
+    // }
 
-    if (userId in dummy.account && password === dummy.account[userId].pwd) {  // 비밀번호 인증
-      setError('');
-      alert('로그인 성공!');
-      logoutfunc(userId)
-      setMyPageOpen(false);
-    } else {
-      setError('이메일 또는 PIN 번호가 잘못되었습니다.');
-    }
+    // if (userId in dummy.account && password === dummy.account[userId].pwd) {  // 비밀번호 인증
+    //   setError('');
+    //   alert('로그인 성공!');
+    //   logoutfunc(userId)
+    //   setMyPageOpen(false);
+    // } else {
+    //   setError('이메일 또는 PIN 번호가 잘못되었습니다.');
+    // }
   };
 
-  const handleClickShowPassword = () => setShowPassword((show) => !show);
+  // const handleClickShowPassword = () => setShowPassword((show) => !show);
 
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
-  };
+  // const handleMouseDownPassword = (event) => {
+  //   event.preventDefault();
+  // };
 
-  const handleMouseUpPassword = (event) => {
-    event.preventDefault();
-  };
+  // const handleMouseUpPassword = (event) => {
+  //   event.preventDefault();
+  // };
 
   return (
     <React.Fragment>
@@ -114,7 +114,7 @@ function MyPage({user, logoutfunc, setMyPageOpen, myPageOpen}) {
                 autoFocus
                 value={userId}
                 onChange={(e) => setUserID(e.target.value)}
-                error={!!error}
+                // error={!!error}
               />
 
               <Button
@@ -130,11 +130,11 @@ function MyPage({user, logoutfunc, setMyPageOpen, myPageOpen}) {
                 보내기
               </Button>
 
-              {error && (
+              {/* {error && (
                 <Typography color="error" variant="body2" align="center">
                   {error}
                 </Typography>
-              )}
+              )} */}
             </Box>
               <Grid2 container spacing={3}>
                 <Grid2>

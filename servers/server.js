@@ -2,7 +2,7 @@ const express = require("express");
 const admin = require("firebase-admin");
 
 admin.initializeApp({
-    credential: admin.credential.cert(require("./serviceAccountKey.json")),
+    credential: admin.credential.cert(require("../../serviceAccountKey.json")),
     databaseURL: "https://test-4d484.firebaseio.com"  // Firestore URL
 });
   
@@ -43,7 +43,7 @@ const monitorAndUpdate = async () => {
             currentTimeIndex: currentTimeIndex+1
         });
 
-        if (currentTimeIndex == 0){
+        if (!currentTimeIndex){
             let current_room = (await docRef_room.get()).data();
             Object.keys(current_room).forEach(key => {
                 if (['A', 'B', 'C'].includes(key)) {
