@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { db } from '../test/firebase';
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
 
+import AdminPage from './AdminPage';
+
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -15,6 +17,9 @@ import { styled } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   display: 'flex',
@@ -37,6 +42,45 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
     margin: theme.spacing(0.5),
     border: '1px solid #dddddd',
     borderRadius: theme.shape.borderRadius,
+  },
+  '& .MuiToggleButtonGroup-middleButton.Mui-disabled':{
+    borderLeft: '1px solid #e0e0e0',
+    color: '#e0e0e0'
+  },
+  '& .Mui-disabled':{
+    color: '#e0e0e0'
+  },
+}));
+const Android12Switch = styled(Switch)(({ theme }) => ({
+  padding: 8,
+  '& .MuiSwitch-track': {
+    borderRadius: 22 / 2,
+    '&::before, &::after': {
+      content: '""',
+      position: 'absolute',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      width: 16,
+      height: 16,
+    },
+    '&::before': {
+      backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 24 24"><path fill="${encodeURIComponent(
+        theme.palette.getContrastText(theme.palette.primary.main),
+      )}" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/></svg>')`,
+      left: 12,
+    },
+    '&::after': {
+      backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 24 24"><path fill="${encodeURIComponent(
+        theme.palette.getContrastText(theme.palette.primary.main),
+      )}" d="M19,13H5V11H19V13Z" /></svg>')`,
+      right: 12,
+    },
+  },
+  '& .MuiSwitch-thumb': {
+    boxShadow: 'none',
+    width: 16,
+    height: 16,
+    margin: 2,
   },
 }));
 
@@ -67,6 +111,12 @@ function ReservationPage({ user, setReserveOpen, reserveOpen, currentTime }) {
   const [selectedTime, setSelectedTime] = useState(null);
   const [timeTable, setTimetable] = useState(null);
   const [openDial, setOpenDial] = useState(false);
+  const [isAdmin, setAdmin] = useState(false);
+
+  const handleChange = (event) => {
+    setAdmin(event.target.checked);
+  };
+
   const handleTimeChange = (event, newTime) => {
     setSelectedTime(newTime);
   };
@@ -79,7 +129,7 @@ function ReservationPage({ user, setReserveOpen, reserveOpen, currentTime }) {
     return () => unsubscribe_Reserve();
   }, []);
   const timeTable_room = timeTable ? timeTable[currentTime.roomText]['Reserve'][currentTime.day] : []
-
+  
   async function setReservation(){
     try {
       await updateDoc(docRef_room, {
@@ -94,9 +144,89 @@ function ReservationPage({ user, setReserveOpen, reserveOpen, currentTime }) {
     }
     setOpenDial(false); 
     setReserveOpen(false);
-    setSelectedTime(1);
+    setSelectedTime(null);
   }
+
+  const reserveText = `${currentTime.month}월 ${currentTime.date}일 ${currentTime.roomName}룸 ${currentTime.time} ~ ${IndexToTime(TimeToIndex(currentTime.time) + selectedTime)}`
+
+  const ReservationDialog = () => (
+    <>
+      <DialogContent sx={dialogContentStyles}>
+        <DialogContentText variant="h6" sx={{ color: '#3c59a3' }}>
+          {reserveText}
+        </DialogContentText>
+        <Paper sx={paperStyles} elevation={3}>
+          <StyledToggleButtonGroup
+            value={selectedTime}
+            exclusive
+            onChange={handleTimeChange}
+            aria-label="time duration"
+          >
+            {['30분', '1시간', '1시간 30분', '2시간', '2시간 30분', '3시간'].map((item, index) => (
+              <ToggleButton
+                disabled={isDisabled(index)}
+                key={index}
+                value={index + 1}
+                aria-label={index + 1}
+              >
+                {item}
+              </ToggleButton>
+            ))}
+            <Button
+              disabled={!selectedTime}
+              variant="contained"
+              disableElevation
+              sx={buttonStyles}
+              onClick={() => setOpenDial(true)}
+            >
+              예약하기
+            </Button>
+          </StyledToggleButtonGroup>
+        </Paper>
+      </DialogContent>
+    </>
+  );
+
+  const dialogContentStyles = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginTop: '10px',
+    '.MuiInputBase-root::before': { display: 'none' },
+    '.MuiInputBase-root::after': { display: 'none' },
+    '.MuiInputBase-root': { borderRadius: '15px' },
+    '& .MuiInputBase-input': { color: 'white' },
+    '.MuiFilledInput-root': { bgcolor: '#3c59a3' },
+    '& .MuiInputLabel-root': { color: '#7792d4' },
+    '& .MuiInputLabel-root.Mui-focused': { color: '#acbeea' },
+    '& .MuiInputLabel-root.Mui-error': { color: '#dc3545' },
+    '&.Mui-focused': {
+      '& .MuiFilledInput-input': { color: '#ffffff' },
+    },
+  };
   
+  const paperStyles = {
+    bgcolor: 'transparent',
+    boxShadow: '0',
+    padding: 2,
+    pb: 1,
+  };
+  
+  const buttonStyles = {
+    width: '218px',
+    pt: 1.3,
+    pb: 1.3,
+    bgcolor: '#092979',
+    color: "white",
+    mt: 2,
+  };
+
+  const isDisabled = (index) => 
+    Boolean(timeTable_room.slice(currentTime.index, currentTime.index + index + 1)
+    .reduce((acc, cur) => acc + cur, 0)) || currentTime.index + index > 35;
+
+  const admin = (user && user.name === '관리자');
+
   return (
     <React.Fragment>
       <Dialog
@@ -104,7 +234,7 @@ function ReservationPage({ user, setReserveOpen, reserveOpen, currentTime }) {
         maxWidth={'sm'}
         open={reserveOpen}
         onClose={() => {setReserveOpen(false);
-          setSelectedTime(1);}}
+          setSelectedTime(null);}}
         PaperProps={{
           sx: {
             bgcolor: '#fffff', // 배경색
@@ -116,84 +246,20 @@ function ReservationPage({ user, setReserveOpen, reserveOpen, currentTime }) {
         }}
       >
         <DialogTitle>예약</DialogTitle>
-        <DialogContent sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          marginTop: '10px',
-          '.MuiInputBase-root::before': {
-            display: 'none'
-          },
-          '.MuiInputBase-root::after': {
-            display: 'none'
-          },
-          '.MuiInputBase-root': {
-            borderRadius: '15px',
-          },
-          '& .MuiInputBase-input': {
-            color: 'white', // 내부 글자 색을 흰색으로 설정
-          },
-          '.MuiFilledInput-root': {
-            bgcolor: '#3c59a3', // 배경색
-          },
-          '& .MuiInputLabel-root': {
-            // 기본상태 라벨 색상
-            color: '#7792d4',
-          },
-          '& .MuiInputLabel-root.Mui-focused': {
-            // 포커스 상태에서 라벨 색상
-            color: '#acbeea',
-          },
-          '& .MuiInputLabel-root.Mui-error': {
-            // 오류 상태에서 라벨 색상
-            color: '#dc3545',
-          },
-          '&.Mui-focused': {
-            '& .MuiFilledInput-input': {
-              color: '#ffffff', // 포커스 시 텍스트 색상 변경
-            },
-          },
-        }}>
-          <DialogContentText variant='h6' sx={{ color: '#3c59a3' }}>
-            {`${currentTime.month}월 ${currentTime.date}일 ${currentTime.roomName}룸 ${currentTime.time} ~ ${IndexToTime(TimeToIndex(currentTime.time) + selectedTime)}`}
-          </DialogContentText>
-
-          <Paper sx={{
-            bgcolor: 'transparent',
-            boxShadow: '0',
-            padding: 2,
-            pb: 1
-          }}
-            elevation={3}>
-            <StyledToggleButtonGroup
-              value={selectedTime}
-              exclusive
-              onChange={handleTimeChange}
-              aria-label="time duration">
-              {['30분', '1시간', '1시간 30분', '2시간', '2시간 30분', '3시간'].map((item, index) => (
-                <ToggleButton
-                  disabled={timeTable_room.slice(currentTime.index, currentTime.index + index + 1).reduce((acc, cur) => acc + cur, 0) || currentTime.index+index > 35}
-                  key={index} value={index + 1} aria-label={index + 1}>
-                  {item}
-                </ToggleButton>
-              ))}
-
-              <Button
-                disabled={!selectedTime}
-                variant='contained'
-                sx={{
-                  width: '218px',
-                  pt: 1.3,
-                  pb: 1.3,
-                  bgcolor: '#092979',
-                  color: "white",
-                  mt: 2
-                }}
-                onClick={() => setOpenDial(true)}
-              >예약하기</Button>
-            </StyledToggleButtonGroup>
-          </Paper>
-        </DialogContent>
+      {admin&&<FormControlLabel
+        sx={{
+          position: 'absolute',
+          right: 0,
+          top: 12,
+          '& .MuiTypography-root': { fontSize: 12, position: "absolute", top: 30 }
+        }}
+        labelPlacement="bottom"
+        checked={isAdmin}
+        onChange={handleChange}
+        control={<Android12Switch defaultChecked />}
+        label="Admin"
+      />}
+        {isAdmin ? <AdminPage setReserveOpen={setReserveOpen} reserveOpen={reserveOpen} currentTime={currentTime}/> : <ReservationDialog />}
 
         <DialogActions>
           <Button sx={{
@@ -220,7 +286,7 @@ function ReservationPage({ user, setReserveOpen, reserveOpen, currentTime }) {
         <DialogTitle id="alert-dialog-title">예약 확인</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {`${currentTime.month}월 ${currentTime.date}일 ${currentTime.roomName}룸 ${currentTime.time} ~ ${IndexToTime(TimeToIndex(currentTime.time) + selectedTime)}`}
+          {reserveText}
             <br />예약하시겠습니까?
           </DialogContentText>
         </DialogContent>

@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 // import { dummy } from '../test/example.js';
 // import './Login.css';
 import { db } from '../test/firebase';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 import Dialog from '@mui/material/Dialog';
 import AppBar from '@mui/material/AppBar';
@@ -30,6 +30,24 @@ function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation 
   const [selectedDay, setSelectedDay] = useState('day1'); // 초기 선택된 날짜는 'day1'
   const [timetable, setTimetable] = useState(''); // 초기 선택된 날짜는 'day1'
 
+  const targetRef = useRef(null);
+  const handleScroll = () => {
+    setTimeout(() => {
+      if (targetRef.current) {
+        targetRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        console.error("Target element is not available.");
+      }
+    }, 100);
+  };
+  function getCurrentIndex() {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');  // 시간 (두 자리로 맞추기)
+    const minutes = now.getMinutes().toString().padStart(2, '0');  // 분 (두 자리로 맞추기)
+    const index = (hours - 6) * 2 + (minutes === 30 ? 1 : 0);  // 06:00부터 시작하는 인덱스 계산
+    return index<0 ? 0 : index;
+  }
+
   const today = new Date();
   const upcomingDays = {};
   for (let i = 0; i <= 2; i++) {
@@ -37,22 +55,15 @@ function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation 
       futureDate.setDate(today.getDate() + i); // i일 후 날짜 계산
       upcomingDays[`day${i+1}`] = [day7[futureDate.getDay()], futureDate.getDate()]; // {day1: [9, 월], ..}
   }
-
-  async function getTimetable() {
-    const docSnap = await getDoc(docRef);
-
-    setTimetable(docSnap.data());
-  };
   
   useEffect(() => { 
-    getTimetable();
-
+    handleScroll();
     const unsubscribe_TimeTable = onSnapshot(docRef, (doc) => {
       setTimetable(doc.data());
     });
     // 컴포넌트 언마운트 시 리스너 정리
     return () => unsubscribe_TimeTable();
-  },[]);
+  },[tablePageOpen]);
 
   const handleDayChange = (day) => {
     setSelectedDay(day);
@@ -73,6 +84,8 @@ function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation 
     const time = `${hours}:${minutes}`;
     return time
   }
+
+  const admin = (user && user.name === '관리자');
 
   return (
     <React.Fragment>
@@ -149,16 +162,18 @@ function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation 
               <Grid direction='row' sx={{width: '25%'}} key={key}>
                 {days.Reserve[selectedDay].map((status, index) => (
                   <Box
+                    ref={IndexToTime(index) === getCurrentIndex() ? targetRef : null}
                     key={index}
-                    onClick={status ? null : () => openReservation({
-                      month: today.getMonth()+1,
-                      date: today.getDate(),
-                      roomText: key,
-                      roomName: roomName[key],
-                      time: IndexToTime(index),
-                      index: index,
-                      day: selectedDay
-                    })}
+                    onClick={(Boolean(status)&&!admin) ? null : (user ? () => openReservation({
+                          month: today.getMonth()+1,
+                          date: today.getDate(),
+                          roomText: key,
+                          roomName: roomName[key],
+                          time: IndexToTime(index),
+                          index: index,
+                          day: selectedDay,
+                          userName: user.name
+                        }) : null)}
                     sx={{
                       // width: '15vw',
                       padding: 1.7,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 // import { dummy } from '../test/example.js';
 import './QuickButton.css';
 
@@ -34,19 +34,21 @@ function QuickButton({ user, open, func, text, openReservation, setDailOpen }) {
   const [dial, setDial] = useState(false);
   const [dial2, setDial2] = useState(false);
   const [lock, setLock] = useState(false);
-  // const [time, setTime] = useState('00:00');
   const [timeTable, setTimetable] = useState([]);
   const winsize = window.innerWidth + window.innerHeight;
 
-  // function getCurrentTime() {
-  //   const now = new Date();
-  //   const hours = now.getHours().toString().padStart(2, '0');  // 시간 (두 자리로 맞추기)
-  //   const minutes = now.getMinutes().toString().padStart(2, '0');  // 분 (두 자리로 맞추기)
-  //   setTime(`${hours}:${minutes}`);
-  // }
+  const targetRef = useRef(null);
+  const handleScroll = () => {
+    setTimeout(() => {
+      if (targetRef.current) {
+        targetRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        console.error("Target element is not available.");
+      }
+    }, 100); // 1초 (1000ms) 후 실행
+  };
 
   useEffect(() => { 
-    // getCurrentTime();
     const unsubscribe_room = onSnapshot(docRef_room, (doc) => {
       setTimetable(doc.data()[text]['Reserve']['day1']);
     });
@@ -94,12 +96,21 @@ function QuickButton({ user, open, func, text, openReservation, setDailOpen }) {
     return time
   }
 
+  function getCurrentIndex() {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');  // 시간 (두 자리로 맞추기)
+    const minutes = now.getMinutes().toString().padStart(2, '0');  // 분 (두 자리로 맞추기)
+    const index = (hours - 6) * 2 + (minutes === 30 ? 1 : 0);  // 06:00부터 시작하는 인덱스 계산
+    return index<0 ? 0 : index;
+  }
+
   const today = new Date();
+  const admin = (user && user.name === '관리자');
 
   return (
     <List className="QB">
       <ListItemButton
-        onClick={!isOpen ? () => func(open, text) : null}
+        onClick={!isOpen ? () => {func(open, text);handleScroll()} : null}
         disableTouchRipple={isOpen}
         sx={{
           width: '97%',
@@ -134,19 +145,22 @@ function QuickButton({ user, open, func, text, openReservation, setDailOpen }) {
                   {timeTable.map((value, index) => (
                     <Grid key={index}>
                       <Button
-                        onClick={user ? () => openReservation(
-                          {
-                            month: today.getMonth()+1,
-                            date: today.getDate(),
-                            roomText: text,
-                            roomName: roomName[text],
-                            time: IndexToTime(index),
-                            index: index,
-                            day: 'day1'
-                          }                          ) : () => setDial(true)}
-                        sx={{ bgcolor: 'white' }}
-                        disabled={Boolean(value)}
-                        variant="outlined"
+                        ref={IndexToTime(index) === getCurrentIndex() ? targetRef : null}
+                        // disabled={Boolean(value)}
+                        disableRipple={Boolean(value)}
+                        disableElevation={true}
+                        onClick={(Boolean(value)&&!admin) ? null : (user ? () => openReservation({
+                          month: today.getMonth()+1,
+                          date: today.getDate(),
+                          roomText: text,
+                          roomName: roomName[text],
+                          time: IndexToTime(index),
+                          index: index,
+                          day: 'day1',
+                          userName: user.name
+                        }) : () => setDial(true))}
+                        sx={Boolean(value) ? {borderColor: '#cacaca', color: '#cacaca'} : { boxShadow: 0 }}
+                        variant={Boolean(value) ? "outlined" : "contained"}
                         size="large"
                       >
                         {IndexToTime(index)}
@@ -180,13 +194,13 @@ function QuickButton({ user, open, func, text, openReservation, setDailOpen }) {
         <DialogTitle id="alert-dialog-title">{"테스트용"}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {user ? `스터디룸 ${text}를 잠금해제하시겠습니까?` : "로그인이 필요합니다. 123 123 ㄱㄱ"}
+            {user ? `스터디룸 - ${roomName[text]}룸을 ${lock ? '대여' : '반납'}하시겠습니까?` : "로그인이 필요합니다. 123 123 ㄱㄱ"}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           {user && <Button onClick={() => setDial(false)}>아니오</Button>}
           <Button onClick={user ? unlock : () => {setDial(false);setDailOpen(true);}} autoFocus>
-            로그인
+            {user ? '네' : '로그인'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -194,12 +208,12 @@ function QuickButton({ user, open, func, text, openReservation, setDailOpen }) {
         <DialogTitle id="alert-dialog-title">{"테스트용"}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            키 가져갔으면 확인
+            {`키 ${lock ? '반납' : '수령'} 후 확인 버튼을 눌러주세요.`}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={request} autoFocus>
-            Agree
+            확인
           </Button>
         </DialogActions>
       </Dialog>

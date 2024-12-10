@@ -28,10 +28,10 @@ function App() {
   const [reserveOpen, setReserveOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(null);
   const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
-  const isWideScreen = windowSize.width+windowSize.height > 1500;
+  const isWideScreen = windowSize.width + windowSize.height > 1500;
   const [test, setTest] = useState("")
 
-  useEffect(() => { 
+  useEffect(() => {
     const docRef = doc(db, "test", "test");
     const unsubscribe_Test = onSnapshot(docRef, (doc) => {
       if (doc.exists()) {
@@ -42,7 +42,7 @@ function App() {
 
     const storedUser = sessionStorage.getItem("user");
     if (storedUser) {
-        setUser(JSON.parse(storedUser));
+      setUser(JSON.parse(storedUser));
     }
 
     const handleResize = () => {
@@ -76,7 +76,7 @@ function App() {
     }
     // 이벤트 리스너 등록
     window.addEventListener('scroll', checkScrollPosition);
-  
+
     // 정리 함수: 컴포넌트 언마운트 시 리스너 제거
     return () => {
       window.removeEventListener('scroll', checkScrollPosition);
@@ -103,43 +103,41 @@ function App() {
 
   async function loginfunc(id) {
     const fetchData = async () => {
+      try {
         const time = new Date().toISOString();
-
-        // IP 가져오기
         const ipResponse = await fetch("https://api.ipify.org?format=json");
         const ipData = await ipResponse.json();
 
-        try {
-            const location = 'test';
-            return { time, ip: ipData.ip, location };
-        } catch (error) {
-            console.error("Error getting location:", error);
-            return { time, ip: ipData.ip, location: { latitude: null, longitude: null } };
+        if (!dummy.account[id]) {
+          throw new Error("Invalid user ID");
         }
+
+        return { time, ip: ipData.ip, name: dummy.account[id].name };
+      } catch (error) {
+        throw new Error(`Data fetch failed: ${error.message}`);
+      }
     };
 
     try {
-        // 사용자 데이터 생성
-        const userData = await fetchData().then((data) => ({ id, ...data }));
-
-        // 상태 업데이트 및 세션 스토리지 저장
-        setUser(userData);
-        sessionStorage.setItem("user", JSON.stringify(userData));
-
-        console.log("Login successful:", userData);
+      const userData = await fetchData();
+      const fullUserData = { id, ...userData };
+      setUser(fullUserData);
+      sessionStorage.setItem("user", JSON.stringify(fullUserData));
+      console.log("Login successful:", fullUserData);
     } catch (error) {
-        console.error("Login failed:", error);
+      console.error("Login failed:", error.message);
     }
-  };
+  }
+
 
   const logoutfunc = () => {
     setUser(null);
     sessionStorage.removeItem("user");
   };
 
-  const openReservation = function(time) {
-    setReserveOpen(true)
-    setCurrentTime(time)
+  const openReservation = function (current) {
+    setReserveOpen(true);
+    setCurrentTime(current);
   }
 
   return (
@@ -157,21 +155,21 @@ function App() {
               color: 'white',
               borderColor: 'white',
             }}
-            variant="outlined" 
-            onClick={user ? ()=>setMyPageOpen(true) : () => setDailOpen(true)}>
-            {user ? dummy.account[user.id].name+'님' : 'Log in' }
+            variant="outlined"
+            onClick={user ? () => setMyPageOpen(true) : () => setDailOpen(true)}>
+            {user ? dummy.account[user.id].name + '님' : 'Log in'}
             {/* 이름부분 */}
           </Button>
-          <Loginform loginfunc={loginfunc} setDailOpen={setDailOpen} dailOpen={dailOpen}/>
-          <MyPage user={user} logoutfunc={logoutfunc} setMyPageOpen={setMyPageOpen} myPageOpen={myPageOpen}/>
+          <Loginform loginfunc={loginfunc} setDailOpen={setDailOpen} dailOpen={dailOpen} />
+          <MyPage user={user} logoutfunc={logoutfunc} setMyPageOpen={setMyPageOpen} myPageOpen={myPageOpen} />
         </div>
       </div>
       <div className='btns'>
-        <QuickButton user={user} open={open} func={btnclick} text="A" openReservation={openReservation} setDailOpen={setDailOpen}/>
+        <QuickButton user={user} open={open} func={btnclick} text="A" openReservation={openReservation} setDailOpen={setDailOpen} />
         <div className="line" />
-        <QuickButton user={user} open={open} func={btnclick} text="B" openReservation={openReservation} setDailOpen={setDailOpen}/>
+        <QuickButton user={user} open={open} func={btnclick} text="B" openReservation={openReservation} setDailOpen={setDailOpen} />
         <div className="line" />
-        <QuickButton user={user} open={open} func={btnclick} text="C" openReservation={openReservation} setDailOpen={setDailOpen}/>
+        <QuickButton user={user} open={open} func={btnclick} text="C" openReservation={openReservation} setDailOpen={setDailOpen} />
       </div>
 
       <div className='fixbox'
@@ -186,13 +184,13 @@ function App() {
             color: '#42464f',
           }}
             variant="contained" endIcon={<ArrowForwardIosIcon />}
-            onClick={()=>setTablePageOpen(true)}>
+            onClick={() => setTablePageOpen(true)}>
             예약시간표
           </Button>
         </div>
-        { windowSize.width > windowSize.height ?
-          <TablePageRow user={user} setTablePageOpen={setTablePageOpen} tablePageOpen={tablePageOpen} openReservation={openReservation}/>
-          : <TablePageColmn user={user} setTablePageOpen={setTablePageOpen} tablePageOpen={tablePageOpen} openReservation={openReservation}/>
+        {windowSize.width > windowSize.height ?
+          <TablePageRow user={user} setTablePageOpen={setTablePageOpen} tablePageOpen={tablePageOpen} openReservation={openReservation} />
+          : <TablePageColmn user={user} setTablePageOpen={setTablePageOpen} tablePageOpen={tablePageOpen} openReservation={openReservation} />
         }
         <div
           className='help'>
@@ -205,7 +203,8 @@ function App() {
           </IconButton>
         </div>
       </div>
-      {currentTime && <ReservationPage user={user} setReserveOpen={setReserveOpen} reserveOpen={reserveOpen} currentTime={currentTime}/>}
+      {currentTime && <ReservationPage user={user} setReserveOpen={setReserveOpen} reserveOpen={reserveOpen} currentTime={currentTime} />}
+      {/* {currentTime && <AdminPage user={user} setAdminOpen={setAdminOpen} adminOpen={adminOpen} currentTime={currentTime} />} */}
     </div>
   );
 }
