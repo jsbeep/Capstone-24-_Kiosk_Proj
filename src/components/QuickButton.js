@@ -190,11 +190,11 @@ function QuickButton({ user, open, func, text, openReservation, setOpenAlert, ch
           )}
         </IconButton>
       </div>
-      <Dialog open={dial} onClose={() => setDial(false)} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description">
-        <DialogTitle id="alert-dialog-title">{`스터디룸 ${lock ? '대여' : '반납'}`}</DialogTitle>
+      <Dialog open={dial} onClose={() => setDial(false)} >
+        <DialogTitle >{`스터디룸 ${lock ? '대여' : '반납'}`}</DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            {user ? `스터디룸 - ${roomName[text]}룸을 ${lock ? '대여' : '반납'}하시겠습니까?` : "로그인이 필요합니다. 123 123 ㄱㄱ"}
+          <DialogContentText >
+            {user ? `스터디룸 - ${roomName[text]}룸을 ${lock ? '대여' : '반납'}하시겠습니까?` : "로그인이 필요합니다."}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

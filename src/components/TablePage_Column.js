@@ -35,8 +35,6 @@ function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation,
     setTimeout(() => {
       if (targetRef.current) {
         targetRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        console.error("Target element is not available.");
       }
     }, 100);
   };
@@ -114,7 +112,9 @@ function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation,
             flexDirection: 'row', alignItems: 'start'
           }}>
               {days.map((day, index) => (
-                <Box sx={{
+                <Box 
+                  key={index}
+                  sx={{
                   display:'flex',
                   flexDirection: 'column',
                   justifyContent:'center',
@@ -148,7 +148,7 @@ function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation,
         </AppBar>
         
         <Box sx={{ flexGrow: 1, display: 'flex', bgcolor: '#f6f7f8'}}>
-          <Grid direction="row" container spacing={0.5} justifyContent="center" alignItems="center" sx={{width: '100%'}}>
+          <Grid container spacing={0.5} justifyContent="center" alignItems="center" sx={{width: '100%'}}>
             <Grid sx={{width: '60px'}}>
               <Typography variant="h6" align="center" sx={{p:1,bgcolor: 'white', borderBottom: '3px solid #092979'}}>
                 시간
@@ -156,7 +156,7 @@ function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation,
             </Grid>
             {Object.entries(timetable).filter(([key]) => ['A', 'B', 'C'].includes(key)).sort(([keyA], [keyB]) => keyA.localeCompare(keyB)).map(([key, days]) => (
               <Grid sx={{width: '25%'}} key={key}>
-                <Typography variant="h6" align="center" sx={{p:1, bgcolor: 'white', borderBottom: '3px solid #092979',}}>
+                <Typography key={key} variant="h6" align="center" sx={{p:1, bgcolor: 'white', borderBottom: '3px solid #092979',}}>
                   {roomName[key]}
                 </Typography>
               </Grid>))}
@@ -165,12 +165,12 @@ function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation,
 
         <Box sx={{ flexGrow: 1, paddingTop: '5px', paddingBottom: '60px', 
            bgcolor: '#f6f7f8', maxHeight: '100%', overflowY: 'auto'}}>
-          <Grid direction='row' container spacing={0.5} justifyContent="center" alignItems="center" sx={{width: '100%'}}>
+          <Grid container spacing={0.5} justifyContent="center" alignItems="center" sx={{width: '100%'}}>
             {/* 시간 열 */}
             <Grid direction='row' sx={{width: '60px'}}>
               {times.map((time) => (
                 <Box key={time} sx={{ paddingTop: 1.7, paddingBottom: 1.7, borderBottom: '1px solid #ddd' }}>
-                  <Typography align="center">{time}</Typography>
+                  <Typography key={time} align="center">{time}</Typography>
                 </Box>
               ))}
             </Grid>
@@ -205,7 +205,7 @@ function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation,
                           : '#c5ccd9'
                     }}
                   >
-                    <Typography align="center">{roomState[status]}</Typography>
+                    <Typography key={index} align="center">{roomState[status]}</Typography>
                   </Box>
                 ))}
               </Grid>

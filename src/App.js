@@ -21,6 +21,8 @@ import './App.css';
 import { Slide, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 
 const state = { "A": false, "B": false, "C": false };
+const AlertContent = { login: { title: '로그인', cont: '로그인이 필요합니다.', btn: '로그인' }, reserve: { title: '예약 확인', cont: '예약 정보가 없습니다.', btn: '예약하기' } }
+
 const docRef = doc(db, "test", "test");
 const docRef_user = doc(db, "test", "user");
 
@@ -252,20 +254,19 @@ function App() {
         </div>
       </div>
       {currentTime && <ReservationPage user={user} setReserveOpen={setReserveOpen} reserveOpen={reserveOpen} currentTime={currentTime} />}
-
-      <Dialog open={Boolean(openAlert)} onClose={() => setOpenAlert(false)}>
-        <DialogTitle id="alert-dialog-title">{openAlert === 'login' ? "로그인 확인" : '예약 확인'}</DialogTitle>
+      {openAlert&&<Dialog open={Boolean(openAlert)} onClose={() => setOpenAlert(false)}>
+        <DialogTitle id="alert-dialog-title">{AlertContent[openAlert]?.title}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {openAlert === 'login' ? "로그인이 필요합니다." : '예약 정보가 없습니다.'}
+            {AlertContent[openAlert]?.cont}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => { setOpenAlert(false); openAlert === 'login' ? setDailOpen(true) : setTablePageOpen(true); }} autoFocus>
-            {openAlert === 'login' ? '로그인' : '예약하기'}
+            {AlertContent[openAlert]?.btn}
           </Button>
         </DialogActions>
-      </Dialog>
+      </Dialog>}
     </div>
   );
 }
