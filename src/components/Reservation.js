@@ -138,6 +138,12 @@ function ReservationPage({ user, setReserveOpen, reserveOpen, currentTime }) {
             index >= currentTime.index && index < currentTime.index + selectedTime ? 1 : item
           ),
       });
+      // await updateDoc(docRef_user, {
+      //   reserveInfo: 
+      //     timeTable_room.map((item, index) =>
+      //       index >= currentTime.index && index < currentTime.index + selectedTime ? 1 : item
+      //     ),
+      // });
       console.log(`유저 '${user.id}' 예약정보 인덱스 추가- ${currentTime.day}:${currentTime.index}~${currentTime.index+selectedTime} `);
     } catch (error) {
       console.error("문서 수정 오류: ", error);

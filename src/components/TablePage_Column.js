@@ -26,7 +26,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation }) {
+function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation, setLoginAlert}) {
   const [selectedDay, setSelectedDay] = useState('day1'); // 초기 선택된 날짜는 'day1'
   const [timetable, setTimetable] = useState(''); // 초기 선택된 날짜는 'day1'
 
@@ -162,7 +162,7 @@ function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation 
               <Grid direction='row' sx={{width: '25%'}} key={key}>
                 {days.Reserve[selectedDay].map((status, index) => (
                   <Box
-                    ref={IndexToTime(index) === getCurrentIndex() ? targetRef : null}
+                    ref={index === getCurrentIndex() ? targetRef : null}
                     key={index}
                     onClick={(Boolean(status)&&!admin) ? null : (user ? () => openReservation({
                           month: today.getMonth()+1,
@@ -173,7 +173,7 @@ function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation 
                           index: index,
                           day: selectedDay,
                           userName: user.name
-                        }) : null)}
+                        }) : () => setLoginAlert(true))}
                     sx={{
                       // width: '15vw',
                       padding: 1.7,

@@ -1,15 +1,15 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { dummy } from './test/example.js';
 import QuickButton from './components/QuickButton';
 import MyPage from './components/MyPage';
 import Loginform from './components/Login';
 import TablePageRow from './components/TablePage_Row.js';
 import TablePageColmn from './components/TablePage_Column.js';
 import ReservationPage from './components/Reservation.js';
-import { db } from './test/firebase.js';
 
+import { auth, db } from './test/firebase.js';
 import { doc, onSnapshot } from 'firebase/firestore';
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
@@ -17,10 +17,16 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import HelpIcon from '@mui/icons-material/Help';
 import './App.css';
 
+import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+
 const state = { "A": false, "B": false, "C": false };
+const docRef = doc(db, "test", "test");
+const docRef_user = doc(db, "test", "user");
 
 function App() {
   const [user, setUser] = useState(null);
+  const [users, setUsers] = useState(null);
+  const [loginAlert, setLoginAlert] = useState(false);
   const [open, setOpen] = useState(state);
   const [dailOpen, setDailOpen] = useState(false);
   const [myPageOpen, setMyPageOpen] = useState(false);
@@ -32,11 +38,15 @@ function App() {
   const [test, setTest] = useState("")
 
   useEffect(() => {
-    const docRef = doc(db, "test", "test");
     const unsubscribe_Test = onSnapshot(docRef, (doc) => {
       if (doc.exists()) {
         setTest(doc.data());
         console.log(test.test);
+      }
+    });
+    const unsubscribe_User = onSnapshot(docRef_user, (doc) => {
+      if (doc.exists()) {
+        setUsers(doc.data());
       }
     });
 
@@ -82,6 +92,7 @@ function App() {
       window.removeEventListener('scroll', checkScrollPosition);
       window.removeEventListener('resize', handleResize);
       unsubscribe_Test();
+      unsubscribe_User();
     };
   }, [dailOpen, test]);
 
@@ -101,36 +112,27 @@ function App() {
 
   const currentButton = isWideScreen ? open['B'] : sum_open;
 
-  async function loginfunc(id) {
-    const fetchData = async () => {
-      try {
-        const time = new Date().toISOString();
-        const ipResponse = await fetch("https://api.ipify.org?format=json");
-        const ipData = await ipResponse.json();
-
-        if (!dummy.account[id]) {
-          throw new Error("Invalid user ID");
-        }
-
-        return { time, ip: ipData.ip, name: dummy.account[id].name };
-      } catch (error) {
-        throw new Error(`Data fetch failed: ${error.message}`);
-      }
-    };
-
+  async function loginfunc(userId, pwd) {
     try {
-      const userData = await fetchData();
-      const fullUserData = { id, ...userData };
+      await signInWithEmailAndPassword(auth, users[userId]['email'], pwd);
+  
+      const time = new Date().toISOString();
+      const ipResponse = await fetch("https://api.ipify.org?format=json");
+      const ipData = await ipResponse.json();
+      const fullUserData = { userId, time, ip: ipData.ip, name: users[userId].name };
       setUser(fullUserData);
       sessionStorage.setItem("user", JSON.stringify(fullUserData));
       console.log("Login successful:", fullUserData);
+      return 0;
     } catch (error) {
-      console.error("Login failed:", error.message);
+      return error.message;
     }
+
   }
 
 
   const logoutfunc = () => {
+    signOut(auth);
     setUser(null);
     sessionStorage.removeItem("user");
   };
@@ -157,7 +159,7 @@ function App() {
             }}
             variant="outlined"
             onClick={user ? () => setMyPageOpen(true) : () => setDailOpen(true)}>
-            {user ? dummy.account[user.id].name + '님' : 'Log in'}
+            {user ? user.name + '님' : 'Log in'}
             {/* 이름부분 */}
           </Button>
           <Loginform loginfunc={loginfunc} setDailOpen={setDailOpen} dailOpen={dailOpen} />
@@ -165,11 +167,11 @@ function App() {
         </div>
       </div>
       <div className='btns'>
-        <QuickButton user={user} open={open} func={btnclick} text="A" openReservation={openReservation} setDailOpen={setDailOpen} />
+        <QuickButton user={user} open={open} func={btnclick} text="A" openReservation={openReservation} setDailOpen={setDailOpen} setLoginAlert={setLoginAlert}/>
         <div className="line" />
-        <QuickButton user={user} open={open} func={btnclick} text="B" openReservation={openReservation} setDailOpen={setDailOpen} />
+        <QuickButton user={user} open={open} func={btnclick} text="B" openReservation={openReservation} setDailOpen={setDailOpen} setLoginAlert={setLoginAlert} />
         <div className="line" />
-        <QuickButton user={user} open={open} func={btnclick} text="C" openReservation={openReservation} setDailOpen={setDailOpen} />
+        <QuickButton user={user} open={open} func={btnclick} text="C" openReservation={openReservation} setDailOpen={setDailOpen} setLoginAlert={setLoginAlert} />
       </div>
 
       <div className='fixbox'
@@ -189,8 +191,8 @@ function App() {
           </Button>
         </div>
         {windowSize.width > windowSize.height ?
-          <TablePageRow user={user} setTablePageOpen={setTablePageOpen} tablePageOpen={tablePageOpen} openReservation={openReservation} />
-          : <TablePageColmn user={user} setTablePageOpen={setTablePageOpen} tablePageOpen={tablePageOpen} openReservation={openReservation} />
+          <TablePageRow user={user} setTablePageOpen={setTablePageOpen} tablePageOpen={tablePageOpen} openReservation={openReservation} setLoginAlert={setLoginAlert}/>
+          : <TablePageColmn user={user} setTablePageOpen={setTablePageOpen} tablePageOpen={tablePageOpen} openReservation={openReservation} setLoginAlert={setLoginAlert}/>
         }
         <div
           className='help'>
@@ -204,7 +206,21 @@ function App() {
         </div>
       </div>
       {currentTime && <ReservationPage user={user} setReserveOpen={setReserveOpen} reserveOpen={reserveOpen} currentTime={currentTime} />}
-      {/* {currentTime && <AdminPage user={user} setAdminOpen={setAdminOpen} adminOpen={adminOpen} currentTime={currentTime} />} */}
+      
+      <Dialog open={loginAlert} onClose={() => setLoginAlert(false)} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description">
+        <DialogTitle id="alert-dialog-title">{"테스트용"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {"로그인이 필요합니다. 123 123 ㄱㄱ"}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => {setLoginAlert(false);setDailOpen(true)}} autoFocus>
+            로그인
+          </Button>
+        </DialogActions>
+      </Dialog>
+
     </div>
   );
 }

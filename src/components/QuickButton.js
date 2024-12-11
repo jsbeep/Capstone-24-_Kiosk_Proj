@@ -30,7 +30,7 @@ const roomName = { 'A': '알파', 'B': '베타', 'C': '감마' };
 const docRef_open = doc(db, "test", "open");
 const docRef_room = doc(db, "test", "room");
 
-function QuickButton({ user, open, func, text, openReservation, setDailOpen }) {
+function QuickButton({ user, open, func, text, openReservation, setLoginAlert, setDailOpen }) {
   const [dial, setDial] = useState(false);
   const [dial2, setDial2] = useState(false);
   const [lock, setLock] = useState(false);
@@ -145,7 +145,7 @@ function QuickButton({ user, open, func, text, openReservation, setDailOpen }) {
                   {timeTable.map((value, index) => (
                     <Grid key={index}>
                       <Button
-                        ref={IndexToTime(index) === getCurrentIndex() ? targetRef : null}
+                        ref={index === getCurrentIndex() ? targetRef : null}
                         // disabled={Boolean(value)}
                         disableRipple={Boolean(value)}
                         disableElevation={true}
@@ -158,7 +158,7 @@ function QuickButton({ user, open, func, text, openReservation, setDailOpen }) {
                           index: index,
                           day: 'day1',
                           userName: user.name
-                        }) : () => setDial(true))}
+                        }) : () => setLoginAlert(true))}
                         sx={Boolean(value) ? {borderColor: '#cacaca', color: '#cacaca'} : { boxShadow: 0 }}
                         variant={Boolean(value) ? "outlined" : "contained"}
                         size="large"
@@ -176,7 +176,7 @@ function QuickButton({ user, open, func, text, openReservation, setDailOpen }) {
       </ListItemButton>
       <div className="icon">
         <IconButton 
-        aria-label="Example" onClick={() => setDial(true)}>
+        aria-label="Example" onClick={() => {user ? setDial(true) : setLoginAlert(true)}}>
           {lock ? (
             <LockOpenOutlinedIcon
               fontSize={isWideScreen ? 'large' : 'medium'}
@@ -199,8 +199,8 @@ function QuickButton({ user, open, func, text, openReservation, setDailOpen }) {
         </DialogContent>
         <DialogActions>
           {user && <Button onClick={() => setDial(false)}>아니오</Button>}
-          <Button onClick={user ? unlock : () => {setDial(false);setDailOpen(true);}} autoFocus>
-            {user ? '네' : '로그인'}
+          <Button onClick={ unlock } autoFocus>
+            네
           </Button>
         </DialogActions>
       </Dialog>

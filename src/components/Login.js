@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { dummy } from '../test/example.js';
 import './Login.css';
+
+import RegisterForm from './Register.js';
 
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
 import IconButton from '@mui/material/IconButton';
@@ -17,15 +17,16 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { FilledInput, TextField, Button, Grid2, Typography, Box, Link } from '@mui/material';
 
-
 function Loginform({loginfunc, setDailOpen, dailOpen}) {
   
   const [userId, setUserID] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [registerFunc] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!userId || !password) {
@@ -33,12 +34,14 @@ function Loginform({loginfunc, setDailOpen, dailOpen}) {
       return;
     }
 
-    if (userId in dummy.account && password === dummy.account[userId].pwd) {  // 비밀번호 인증
+    const loginFailed = await loginfunc(userId, password);
+
+    if (!loginFailed){
       setError('');
-      alert('로그인 성공!');
-      loginfunc(userId)
+      alert("로그인 성공!");
       setDailOpen(false);
-    } else {
+    } else{
+      console.log(loginFailed);
       setError('이메일 또는 PIN 번호가 잘못되었습니다.');
     }
   };
@@ -71,12 +74,13 @@ function Loginform({loginfunc, setDailOpen, dailOpen}) {
           },
         }}
       >
-        <DialogTitle>Optional sizes</DialogTitle>
+        <DialogTitle>로그인</DialogTitle>
         <DialogContent sx={{
           display: 'flex', 
           flexDirection: 'column', 
           alignItems: 'center',
-          marginTop:'40px',
+          // marginTop:'40px',
+          mb:'40px',
           '.MuiInputBase-root::before': {
             display:'none'
           },
@@ -110,9 +114,9 @@ function Loginform({loginfunc, setDailOpen, dailOpen}) {
             },
           },
         }}>
-          <DialogContentText sx={{ color: '#3c59a3' }}>
+          {/* <DialogContentText sx={{ color: '#3c59a3' }}>
             You can set my maximum width and whether to adapt or not.
-          </DialogContentText>
+          </DialogContentText> */}
             <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '250px' }}>
               <TextField
                 variant='filled'
@@ -120,8 +124,7 @@ function Loginform({loginfunc, setDailOpen, dailOpen}) {
                 required
                 fullWidth
                 id="Id"
-                type='number'
-                inputProps={{ inputMode: 'numeric' }}
+              inputProps={{ inputMode: 'numeric', maxLength: 7 }}
                 label="학번"
                 name="Id"
                 autoComplete="Id"
@@ -144,7 +147,7 @@ function Loginform({loginfunc, setDailOpen, dailOpen}) {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  inputProps={{ inputMode: 'numeric' }}
+                  inputProps={{ inputMode: 'numeric', maxLength: 6 }}
                   endAdornment={
                     <InputAdornment position="end">
                       <IconButton
@@ -187,11 +190,12 @@ function Loginform({loginfunc, setDailOpen, dailOpen}) {
                     PIN 번호 찾기</Link>
                 </Grid2>
                 <Grid2>
-                  <Link href="#" variant="body2">가입하기
+                  <Link onClick={()=> setDialogOpen(true)} href="#" variant="body2">가입하기
                   </Link>
                 </Grid2>
               </Grid2>
         </DialogContent>
+        {dialogOpen&&<RegisterForm registerFunc={registerFunc} setDialogOpen={setDialogOpen} dialogOpen={dialogOpen}/>}
         <DialogActions>
           <Button sx={{
             color: "#acbeea",

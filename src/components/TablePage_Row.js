@@ -25,7 +25,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation }) {
+function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation, setLoginAlert }) {
   const [selectedDay, setSelectedDay] = useState('day1'); // 초기 선택된 날짜는 'day1'
   const [timetable, setTimetable] = useState(''); // 초기 선택된 날짜는 'day1'
   
@@ -264,7 +264,7 @@ function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation }
                     }}>
                     {days.Reserve[selectedDay].map((status, index) => (
                       <Box
-                        ref={IndexToTime(index) === getCurrentIndex()+5 ? targetRef : null}
+                        ref={index === getCurrentIndex()+5 ? targetRef : null}
                         key={index}
                         onClick={(Boolean(status)&&!admin) ? null : (user ? () => openReservation({
                           month: today.getMonth()+1,
@@ -275,7 +275,7 @@ function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation }
                           index: index,
                           day: selectedDay,
                           userName: user.name
-                        }) : null)}
+                        }) : () => setLoginAlert(true))}
                         sx={{
                           flexShrink: 0,
                           cursor: "pointer",
@@ -299,7 +299,6 @@ function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation }
             </Box>
           </Box>
         </Box>
-
       </Dialog>
     </React.Fragment>
   );
