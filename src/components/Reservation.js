@@ -126,12 +126,13 @@ function ReservationPage({ user, setReserveOpen, reserveOpen, currentTime }) {
   };
 
   useEffect(() => {
+    setAdmin(false);
     const unsubscribe_Reserve = onSnapshot(docRef_room, (doc) => {
       setTimetable(doc.data());
     });
     // 컴포넌트 언마운트 시 리스너 정리
     return () => unsubscribe_Reserve();
-  }, []);
+  }, [user]);
   const timeTable_room = timeTable ? timeTable[currentTime.roomText]['Reserve'][currentTime.day] : []
   
   async function setReservation(){
