@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 
 import { db } from '../test/firebase';
-import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { doc, updateDoc, onSnapshot, arrayUnion  } from 'firebase/firestore';
 
 import AdminPage from './AdminPage';
 
@@ -85,6 +85,7 @@ const Android12Switch = styled(Switch)(({ theme }) => ({
 }));
 
 const docRef_room = doc(db, "test", "room");
+const docRef_user = doc(db, "test", "user");
 
 const IndexToTime = function (index) {
   const hours = String(Math.floor(index / 2) + 6).padStart(2, '0'); // 06부터 시작
@@ -99,7 +100,8 @@ const TimeToIndex = function (time) {
 };
 
 function ReservationPage({ user, setReserveOpen, reserveOpen, currentTime }) {
-  // {
+  // user = { userId, time, ip, name }
+  // currentTime = {
   //   month: 12,
   //   date: 9,
   //   roomText: A,
@@ -107,11 +109,13 @@ function ReservationPage({ user, setReserveOpen, reserveOpen, currentTime }) {
   //   time: 06:00,
   //   index: 0,
   //   day: day1 
-  // } [currentTime.roomText]['Reserve'][currentTime]
+  // } 
   const [selectedTime, setSelectedTime] = useState(null);
   const [timeTable, setTimetable] = useState(null);
   const [openDial, setOpenDial] = useState(false);
   const [isAdmin, setAdmin] = useState(false);
+
+  const isWide = window.innerWidth > window.innerHeight;
 
   const handleChange = (event) => {
     setAdmin(event.target.checked);
@@ -138,13 +142,9 @@ function ReservationPage({ user, setReserveOpen, reserveOpen, currentTime }) {
             index >= currentTime.index && index < currentTime.index + selectedTime ? 1 : item
           ),
       });
-      // await updateDoc(docRef_user, {
-      //   reserveInfo: 
-      //     timeTable_room.map((item, index) =>
-      //       index >= currentTime.index && index < currentTime.index + selectedTime ? 1 : item
-      //     ),
-      // });
-      console.log(`유저 '${user.id}' 예약정보 인덱스 추가- ${currentTime.day}:${currentTime.index}~${currentTime.index+selectedTime} `);
+      await updateDoc(docRef_user, {
+        [`${user.userId}.reserve.${currentTime.day}.${currentTime.roomText}`]: arrayUnion({ start: currentTime.index, end: currentTime.index+selectedTime-1 }),
+      });
     } catch (error) {
       console.error("문서 수정 오류: ", error);
     }
@@ -158,7 +158,7 @@ function ReservationPage({ user, setReserveOpen, reserveOpen, currentTime }) {
   const ReservationDialog = () => (
     <>
       <DialogContent sx={dialogContentStyles}>
-        <DialogContentText variant="h6" sx={{ color: '#3c59a3' }}>
+        <DialogContentText variant={isWide ? "h5" : "h7"} sx={{ color: '#3c59a3' }}>
           {reserveText}
         </DialogContentText>
         <Paper sx={paperStyles} elevation={3}>
@@ -219,7 +219,7 @@ function ReservationPage({ user, setReserveOpen, reserveOpen, currentTime }) {
   };
   
   const buttonStyles = {
-    width: '218px',
+    width: isWide ? '332px' : '218px',
     pt: 1.3,
     pb: 1.3,
     bgcolor: '#092979',

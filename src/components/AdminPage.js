@@ -205,6 +205,8 @@ function AdminPage({ user, setReserveOpen, reserveOpen, currentTime }) {
                 width: window.innerHeight > window.innerWidth ? '105px' : '162px',
                 pt: 1.3,
                 pb: 1.3,
+                pl: 0,
+                pr: 0,
                 bgcolor: '#092979',
                 color: "white",
                 mr: 0.5,

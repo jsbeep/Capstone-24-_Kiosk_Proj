@@ -30,7 +30,7 @@ const roomName = { 'A': '알파', 'B': '베타', 'C': '감마' };
 const docRef_open = doc(db, "test", "open");
 const docRef_room = doc(db, "test", "room");
 
-function QuickButton({ user, open, func, text, openReservation, setLoginAlert, setDailOpen }) {
+function QuickButton({ user, open, func, text, openReservation, setOpenAlert, checkReserve }) {
   const [dial, setDial] = useState(false);
   const [dial2, setDial2] = useState(false);
   const [lock, setLock] = useState(false);
@@ -96,12 +96,12 @@ function QuickButton({ user, open, func, text, openReservation, setLoginAlert, s
     return time
   }
 
-  function getCurrentIndex() {
+  function getCurrentIndex(cor = false) {
     const now = new Date();
     const hours = now.getHours().toString().padStart(2, '0');  // 시간 (두 자리로 맞추기)
     const minutes = now.getMinutes().toString().padStart(2, '0');  // 분 (두 자리로 맞추기)
     const index = (hours - 6) * 2 + (minutes === 30 ? 1 : 0);  // 06:00부터 시작하는 인덱스 계산
-    return index<0 ? 0 : index;
+    return cor ? index : index<0 ? 0 : index;
   }
 
   const today = new Date();
@@ -158,7 +158,7 @@ function QuickButton({ user, open, func, text, openReservation, setLoginAlert, s
                           index: index,
                           day: 'day1',
                           userName: user.name
-                        }) : () => setLoginAlert(true))}
+                        }) : () => setOpenAlert('login'))}
                         sx={Boolean(value) ? {borderColor: '#cacaca', color: '#cacaca'} : { boxShadow: 0 }}
                         variant={Boolean(value) ? "outlined" : "contained"}
                         size="large"
@@ -176,7 +176,7 @@ function QuickButton({ user, open, func, text, openReservation, setLoginAlert, s
       </ListItemButton>
       <div className="icon">
         <IconButton 
-        aria-label="Example" onClick={() => {user ? setDial(true) : setLoginAlert(true)}}>
+        aria-label="Example" onClick={() => {user ? (checkReserve('day1', text, getCurrentIndex(true)) ? setDial(true) : setOpenAlert('reserve') ) : setOpenAlert('login')}}>
           {lock ? (
             <LockOpenOutlinedIcon
               fontSize={isWideScreen ? 'large' : 'medium'}
@@ -191,7 +191,7 @@ function QuickButton({ user, open, func, text, openReservation, setLoginAlert, s
         </IconButton>
       </div>
       <Dialog open={dial} onClose={() => setDial(false)} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description">
-        <DialogTitle id="alert-dialog-title">{"테스트용"}</DialogTitle>
+        <DialogTitle id="alert-dialog-title">{`스터디룸 ${lock ? '대여' : '반납'}`}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
             {user ? `스터디룸 - ${roomName[text]}룸을 ${lock ? '대여' : '반납'}하시겠습니까?` : "로그인이 필요합니다. 123 123 ㄱㄱ"}

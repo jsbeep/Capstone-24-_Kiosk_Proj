@@ -13,7 +13,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import Slide from '@mui/material/Slide';
 
 import Grid from '@mui/material/Grid2';
-import { Box, Typography, Button, ButtonGroup } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 const docRef = doc(db, "test", "room");
 
@@ -26,7 +26,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation, setLoginAlert}) {
+function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation, setOpenAlert}) {
   const [selectedDay, setSelectedDay] = useState('day1'); // 초기 선택된 날짜는 'day1'
   const [timetable, setTimetable] = useState(''); // 초기 선택된 날짜는 'day1'
 
@@ -95,7 +95,7 @@ function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation,
         onClose={handleClose}
         TransitionComponent={Transition}
       >
-        <AppBar sx={{ position:'relative' ,bgcolor: '#092979', boxShadow: 0, pb: 2 }}>
+        <AppBar sx={{ position:'relative' ,bgcolor: '#092979', boxShadow: 0, pb: 1 }}>
           <Toolbar>
             <IconButton
               edge="start"
@@ -109,24 +109,41 @@ function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation,
               예약하기
             </Typography>
           </Toolbar>
-          <Box sx={{flexGrow: 1, padding: 2, display: 'flex', 
-          flexDirection:'row', alignItems: 'start'}}>
-            <ButtonGroup variant="contained">
-
-            {days.map(day => (
-              <Button
-              key={day}
-              sx={{
-                bgcolor: selectedDay === day ? 'white' : '#092979',
-                color: selectedDay === day ? '#092979' : 'white',
-                borderRadius: 2
-              }}
-              size='large'
-              onClick={() => handleDayChange(day)}>
-                  {upcomingDays[day][0]} {/* day1 => 1, day2 => 2 형식으로 표시 */}
-              </Button>
-            ))}
-            </ButtonGroup>
+          <Box sx={{
+            flexGrow: 1, padding: 1, display: 'flex',
+            flexDirection: 'row', alignItems: 'start'
+          }}>
+              {days.map((day, index) => (
+                <Box sx={{
+                  display:'flex',
+                  flexDirection: 'column',
+                  justifyContent:'center',
+                  alignContent:'center',
+                  mt: 2,
+                  // height: 100
+                }}>
+                <Typography align='center' color={
+                    selectedDay === day ? 'white' : '#717fa3'}>{upcomingDays[day][0]}</Typography>
+                <Box
+                  key={day}
+                  sx={{
+                    display:'flex',
+                    bgcolor: selectedDay === day ? 'white' : '#092979',
+                    transition: 'background-color 0.1s ease',
+                    borderRadius: '50%',
+                    width: 40,
+                    height: 40,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    m: 1,
+                    mb: 0
+                  }}
+                  onClick={() => handleDayChange(day)}>
+                  <Typography align='center' variant='h6' color={
+                    selectedDay === day ? '#092979' : '#717fa3'}>{today.getDate()+index}</Typography> {/* day1 => 1, day2 => 2 형식으로 표시 */}
+                </Box>
+              </Box>
+              ))}
           </Box>
         </AppBar>
         
@@ -173,7 +190,7 @@ function TablePageColmn({user, setTablePageOpen, tablePageOpen, openReservation,
                           index: index,
                           day: selectedDay,
                           userName: user.name
-                        }) : () => setLoginAlert(true))}
+                        }) : () => setOpenAlert('login'))}
                     sx={{
                       // width: '15vw',
                       padding: 1.7,

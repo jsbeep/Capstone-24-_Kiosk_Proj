@@ -77,8 +77,8 @@ hr {
 .help {
   position: absolute;
   /* width: 50px;
-  height: 50px;
-  bottom: 50px;*/
+  height: 50px; */
+  bottom: 5px; 
   right: 50px;
 }
 
@@ -134,8 +134,8 @@ hr {
     height: 4px;
   }
   .help {
-    right: 30px;
-    bottom: 3%;
+    right: 24px;
+    bottom: 15%;
   }
   .tablebtn{
     bottom: 3%;

@@ -12,7 +12,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import Slide from '@mui/material/Slide';
 
-import {  Box, Typography, Button, ButtonGroup } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 const docRef = doc(db, "test", "room");
 
@@ -25,17 +25,15 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation, setLoginAlert }) {
+function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation, setOpenAlert }) {
   const [selectedDay, setSelectedDay] = useState('day1'); // 초기 선택된 날짜는 'day1'
   const [timetable, setTimetable] = useState(''); // 초기 선택된 날짜는 'day1'
-  
+
   const targetRef = useRef(null);
   const handleScroll = () => {
     setTimeout(() => {
       if (targetRef.current) {
         targetRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        console.error("Target element is not available.");
       }
     }, 100);
   };
@@ -44,15 +42,15 @@ function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation, 
     const hours = now.getHours().toString().padStart(2, '0');  // 시간 (두 자리로 맞추기)
     const minutes = now.getMinutes().toString().padStart(2, '0');  // 분 (두 자리로 맞추기)
     const index = (hours - 6) * 2 + (minutes === 30 ? 1 : 0);  // 06:00부터 시작하는 인덱스 계산
-    return index<0 ? 0 : index;
+    return index < 0 ? 0 : index;
   }
 
   const today = new Date();
   const upcomingDays = {};
   for (let i = 0; i <= 2; i++) {
-      const futureDate = new Date(today);
-      futureDate.setDate(today.getDate() + i); // i일 후 날짜 계산
-      upcomingDays[`day${i+1}`] = [day7[futureDate.getDay()], futureDate.getDate()]; // {day1: [9, 월], ..}
+    const futureDate = new Date(today);
+    futureDate.setDate(today.getDate() + i); // i일 후 날짜 계산
+    upcomingDays[`day${i + 1}`] = [day7[futureDate.getDay()], futureDate.getDate()]; // {day1: [9, 월], ..}
   }
 
   useEffect(() => {
@@ -95,7 +93,7 @@ function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation, 
         onClose={handleClose}
         TransitionComponent={Transition}
       >
-        <AppBar sx={{ position: 'relative', bgcolor: '#092979', height: '25%' }}>
+        <AppBar sx={{ position: 'relative', bgcolor: '#092979' }}>
           <Toolbar>
             <IconButton
               edge="start"
@@ -108,31 +106,46 @@ function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation, 
             <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
               예약하기
             </Typography>
-            <ButtonGroup variant="contained">
-
-              {days.map(day => (
-                <Button
-                  key={day}
-                  sx={{
-                    bgcolor: selectedDay === day ? 'white' : '#092979',
-                    color: selectedDay === day ? '#092979' : 'white',
-                    borderRadius: 2
-                  }}
-              size='large'
-                  onClick={() => handleDayChange(day)}              >
-                  {upcomingDays[day][0]} {/* day1 => 1, day2 => 2 형식으로 표시 */}
-                </Button>
-              ))}
-            </ButtonGroup>
           </Toolbar>
           <Box sx={{
             flexGrow: 1, padding: 1, display: 'flex',
             flexDirection: 'row', alignItems: 'start'
           }}>
+            {days.map((day, index) => (
+              <Box
+                key={index}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignContent: 'center',
+                  // height: 100
+                }}>
+                <Typography align='center' color={
+                  selectedDay === day ? 'white' : '#717fa3'}>{upcomingDays[day][0]}</Typography>
+                <Box
+                  key={day}
+                  sx={{
+                    display: 'flex',
+                    bgcolor: selectedDay === day ? 'white' : '#092979',
+                    transition: 'background-color 0.1s ease',
+                    borderRadius: '50%',
+                    width: 48,
+                    height: 48,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    m: 1,
+                  }}
+                  onClick={() => handleDayChange(day)}>
+                  <Typography align='center' variant='h5' color={
+                    selectedDay === day ? '#092979' : '#717fa3'}>{today.getDate() + index}</Typography> {/* day1 => 1, day2 => 2 형식으로 표시 */}
+                </Box>
+              </Box>
+            ))}
           </Box>
         </AppBar>
 
-        <Box  style={{
+        <Box style={{
           padding: 5,
           display: 'flex',
           overflowX: 'auto',
@@ -141,14 +154,14 @@ function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation, 
           flexDirection: 'row',
           backgroundColor: '#f6f7f8'
         }}>
-          <Box  style={{
+          <Box style={{
             display: 'flex',
             width: 'auto',
-            height: '100%',
+            height: '90vh',
             flexDirection: 'column',
             backgroundColor: '#f6f7f8'
           }}>
-            <Box  style={{
+            <Box style={{
               display: 'flex',
               height: '60px',
               width: 'auto',
@@ -169,10 +182,10 @@ function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation, 
                 }}>
                 <Typography variant='h6' align="center">시간</Typography>
               </Box>
-            </Box> 
+            </Box>
             {/* 최종 */}
 
-            <Box  style={{
+            <Box style={{
               width: 'auto',
               flexDirection: 'column',
             }}>
@@ -199,28 +212,56 @@ function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation, 
                         borderBottom: '1px solid #ddd',
                         borderRight: '3px solid #092979',
                         width: '80px',
-                        height: '10vh',
+                        height: '7.5vh',
                         backgroundColor: 'white'
                       }}>
                       <Typography variant='h6' align="center">{roomName[key]}</Typography>
                     </Box>
                   </Box>
                 ))}
+              {['101호', '102호', '124호'].map((room) => (
+                <Box
+                  key={room}
+                  sx={{
+                    display: 'flex',
+                    height: 'auto',
+                    width: 'auto',
+                  }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginRight: 0.5,
+                      marginBottom: 0.2,
+                      padding: 1,
+                      borderBottom: '1px solid #ddd',
+                      borderRight: '3px solid #092979',
+                      width: '80px',
+                      height: '7.5vh',
+                      backgroundColor: 'white'
+                    }}>
+                    <Typography variant='h6' align="center">{room}</Typography>
+                  </Box>
+                </Box>
+              ))}
             </Box>
 
           </Box>
 
-          <Box  style={{
+          <Box style={{
             display: 'flex',
             overflowX: 'auto',
             width: 'auto',
-            height: '100%',
+            // overflowY: 'hidden',
+            height: '90vh',
             flexDirection: 'column',
             backgroundColor: '#f6f7f8'
           }}>
-            <Box  style={{
+            <Box style={{
               display: 'flex',
               height: '60px',
+              minHeight: '50px',
               width: 'auto',
             }}>
               {times.map((time) => (
@@ -243,7 +284,7 @@ function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation, 
               ))}
             </Box>
 
-            <Box  style={{
+            <Box style={{
               // display: 'flex',
               // height: '100%',
               width: 'auto',
@@ -264,10 +305,10 @@ function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation, 
                     }}>
                     {days.Reserve[selectedDay].map((status, index) => (
                       <Box
-                        ref={index === getCurrentIndex()+5 ? targetRef : null}
+                        ref={(days === 'day1' && index + 5 === getCurrentIndex() + 5) ? targetRef : null}
                         key={index}
-                        onClick={(Boolean(status)&&!admin) ? null : (user ? () => openReservation({
-                          month: today.getMonth()+1,
+                        onClick={(Boolean(status) && !admin) ? null : (user ? () => openReservation({
+                          month: today.getMonth() + 1,
                           date: today.getDate(),
                           roomText: key,
                           roomName: roomName[key],
@@ -275,7 +316,7 @@ function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation, 
                           index: index,
                           day: selectedDay,
                           userName: user.name
-                        }) : () => setLoginAlert(true))}
+                        }) : () => setOpenAlert('login'))}
                         sx={{
                           flexShrink: 0,
                           cursor: "pointer",
@@ -289,13 +330,46 @@ function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation, 
                           backgroundColor: status === 0 ? 'white' : '#f0f9ff',
                           color: status === 0 ? '#3e5ba5' : '#c5ccd9',
                           width: '80px',
-                          height: '10vh',
+                          height: '7.5vh',
                         }}>
                         <Typography align="center">{roomState[status]}</Typography>
                       </Box>
                     ))}
                   </Box>
                 ))}
+              {['101호', '102호', '124호'].map((room) => (
+                <Box
+                  key={room}
+                  sx={{
+                    display: 'flex',
+                    height: 'auto',
+                    width: 'auto',
+                  }}
+                >
+                  {Array.from({ length: 36 }).map((_, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        flexShrink: 0,
+                        cursor: "pointer",
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginRight: 0.5,
+                        marginBottom: 0.2,
+                        padding: 1,
+                        borderBottom: '1px solid #ddd',
+                        backgroundColor: '#f8fcff',
+                        width: '80px',
+                        height: '7.5vh',
+                      }}
+                    >
+                      {/* <Typography align="center">{room}</Typography> */}
+                    </Box>
+                  ))}
+                </Box>
+              ))}
+
             </Box>
           </Box>
         </Box>
