@@ -30,7 +30,7 @@ const roomName = { 'A': '알파', 'B': '베타', 'C': '감마' };
 const docRef_open = doc(db, "test", "open");
 const docRef_room = doc(db, "test", "room");
 
-function QuickButton({ user, open, func, text, openReservation, setOpenAlert, checkReserve }) {
+function QuickButton({ user, open, func, text, openReservation, setOpenAlert, checkReserve, removeReserve}) {
   const [dial, setDial] = useState(false);
   const [dial2, setDial2] = useState(false);
   const [lock, setLock] = useState(false);
@@ -68,7 +68,7 @@ function QuickButton({ user, open, func, text, openReservation, setOpenAlert, ch
       await updateDoc(docRef_open, {
         [field]: value,  // 동적으로 필드와 값을 설정
       });
-      console.log("문서가 성공적으로 수정되었습니다!");
+      console.log("서보모터 요청용");
     } catch (error) {
       console.error("문서 수정 오류: ", error);
     }
@@ -76,9 +76,16 @@ function QuickButton({ user, open, func, text, openReservation, setOpenAlert, ch
 
   const unlock = () => {  // 문 열기(사용중 전환) + 키 보관함 오픈 요청
     updateDocument(text, !lock);
-    updateDocument("request", text)
+    updateDocument("request", text);
+    
     setDial(false);
-    setDial2(true)
+    setDial2(true);
+    if (!lock){
+      removeReserve('day1', text, getCurrentIndex(true)+1);
+      removeRoom();
+    } else{
+      getRoom();
+    }
   };
   const request = () => { // 키 보관함 닫기 요청
     updateDocument("request", "");
@@ -106,6 +113,34 @@ function QuickButton({ user, open, func, text, openReservation, setOpenAlert, ch
 
   const today = new Date();
   const admin = (user && user.name === '관리자');
+
+  const removeRoom = async () => {
+    const rem = checkReserve('day1', text, getCurrentIndex(true)+1);
+    rem.map((item)=>(
+      setTimetable(timeTable.fill(0, item.start, item.end + 1))
+    ));
+    try {
+      await updateDoc(docRef_room, {
+        [`${text}.Reserve.day1`]: timeTable,  // 동적으로 필드와 값을 설정
+        [`${text}.In_use`]: false,
+        [`${text}.Recent_user`]: ''
+      });
+      console.log("나가");
+    } catch (error) {
+      console.error("문서 수정 오류: ", error);
+    }
+  }
+  const getRoom = async () => {
+    try {
+      await updateDoc(docRef_room, {
+        [`${text}.In_use`]: true,
+        [`${text}.Recent_user`]: user.userId
+      });
+      console.log("선수 입장");
+    } catch (error) {
+      console.error("문서 수정 오류: ", error);
+    }
+  }
 
   return (
     <List className="QB">
@@ -176,7 +211,7 @@ function QuickButton({ user, open, func, text, openReservation, setOpenAlert, ch
       </ListItemButton>
       <div className="icon">
         <IconButton 
-        aria-label="Example" onClick={() => {user ? (checkReserve('day1', text, getCurrentIndex(true)) ? setDial(true) : setOpenAlert('reserve') ) : setOpenAlert('login')}}>
+        aria-label="Example" onClick={() => { user ? (checkReserve('day1', text, getCurrentIndex(true)+1) ? setDial(true) : setOpenAlert('reserve') ) : setOpenAlert('login')}}>
           {lock ? (
             <LockOpenOutlinedIcon
               fontSize={isWideScreen ? 'large' : 'medium'}
@@ -205,7 +240,7 @@ function QuickButton({ user, open, func, text, openReservation, setOpenAlert, ch
         </DialogActions>
       </Dialog>
       <Dialog open={dial2} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description">
-        <DialogTitle id="alert-dialog-title">{"테스트용"}</DialogTitle>
+        <DialogTitle id="alert-dialog-title">{"스터디룸 사용"}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
             {`키 ${lock ? '반납' : '수령'} 후 확인 버튼을 눌러주세요.`}

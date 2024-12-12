@@ -9,7 +9,7 @@ import ReservationPage from './components/Reservation.js';
 import Chat from './components/Chat.js';
 
 import { auth, db } from './test/firebase.js';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 
 import Button from '@mui/material/Button';
@@ -84,7 +84,7 @@ function App() {
       const windowHeight = window.innerHeight; // 화면 높이
       const documentHeight = document.documentElement.scrollHeight; // 문서 전체 높이
 
-      if (!slideOpen &&!dailOpen && scrollTop + windowHeight >= documentHeight - 300) {
+      if (!slideOpen && !dailOpen && scrollTop + windowHeight >= documentHeight - 300) {
         // 아래로 스크롤 끝에 도달
         window.scrollTo({
           top: (windowHeight < 500) ? 5 : 250,
@@ -109,6 +109,7 @@ function App() {
       unsubscribe_User();
     };
   }, [dailOpen, test, slideOpen]);
+
 
   const sum_open = Object.values(open).reduce((acc, value) => acc + value, 0);
 
@@ -156,14 +157,35 @@ function App() {
 
   const checkReserve = (day, room, index) => {
     // 데이터에 주어진 day와 room가 있는지 확인
-    const data = user.reserve;
+    const data = users[user.userId].reserve;
+    console.log('data::::::::::',index, data)
     if (!data[day] || !data[day][room]) {
       return false;
-    } else if (data[day][room].some(({ start, end }) => start <= index && index <= end)){
-      return true;
+    } else if (data[day][room].some(({ start, end }) => start <= index && index <= end)) {
+      // console.log(data[day][room].filter(({ start, end }) => start <= index && index <= end))
+      return data[day][room].filter(({ start, end }) => start <= index && index <= end);
     }
     return false;
   };
+
+  const removeReserve = async function (day, room, index) {
+    try {
+      const data = users[user.userId].reserve;
+      // 지정된 키의 배열 가져오기
+      const targetArray = data[day]?.[room];
+      // 조건에 맞는 항목 제거
+      const updatedArray = targetArray.filter(
+        ({ start, end }) => !(start <= index && index <= end)
+      );
+      // Firestore에 업데이트
+      await updateDoc(docRef_user, {
+        [`${user.userId}.reserve.${day}.${room}`]: updatedArray,
+      });
+      console.log("remove data successfully:", updatedArray);
+    } catch (error) {
+      console.error("Error removing data:", error);
+    }
+  }
 
   return (
     <div className="App">
@@ -190,11 +212,11 @@ function App() {
         </div>
       </div>
       <div className='btns'>
-        <QuickButton user={user} open={open} func={btnclick} text="A" openReservation={openReservation} setDailOpen={setDailOpen} setOpenAlert={setOpenAlert} checkReserve={checkReserve}/>
+        <QuickButton user={user} open={open} func={btnclick} text="A" openReservation={openReservation} setDailOpen={setDailOpen} setOpenAlert={setOpenAlert} checkReserve={checkReserve} removeReserve={removeReserve} />
         <div className="line" />
-        <QuickButton user={user} open={open} func={btnclick} text="B" openReservation={openReservation} setDailOpen={setDailOpen} setOpenAlert={setOpenAlert} checkReserve={checkReserve} />
+        <QuickButton user={user} open={open} func={btnclick} text="B" openReservation={openReservation} setDailOpen={setDailOpen} setOpenAlert={setOpenAlert} checkReserve={checkReserve} removeReserve={removeReserve} />
         <div className="line" />
-        <QuickButton user={user} open={open} func={btnclick} text="C" openReservation={openReservation} setDailOpen={setDailOpen} setOpenAlert={setOpenAlert} checkReserve={checkReserve} />
+        <QuickButton user={user} open={open} func={btnclick} text="C" openReservation={openReservation} setDailOpen={setDailOpen} setOpenAlert={setOpenAlert} checkReserve={checkReserve} removeReserve={removeReserve} />
       </div>
 
       <div className='fixbox'
@@ -220,18 +242,19 @@ function App() {
         <div
           className='help'>
           <IconButton disableRipple aria-label="Example" onClick={handleClickOpen} sx={{
-              bgcolor:'#092979',
-              borderRadius: '35px',
-              boxShadow: 5,}}>
+            bgcolor: '#092979',
+            borderRadius: '35px',
+            boxShadow: 5,
+          }}>
             <InsertCommentIcon sx={{
               color: 'white',
-              width:  isWideScreen ? 50 : 30,
+              width: isWideScreen ? 50 : 30,
               height: isWideScreen ? 50 : 30,
               boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
               fontSize: isWideScreen ? 70 : 45
             }} />
           </IconButton>
-          {slideOpen&&<Dialog
+          {slideOpen && <Dialog
             open={slideOpen}
             TransitionComponent={Transition}
             onClose={handleClose}
@@ -249,12 +272,12 @@ function App() {
               },
             }}
           >
-            <Chat user={user ? user.name : '_'+userIP.ip}/>
+            <Chat user={user ? user.name : '_' + userIP.ip} />
           </Dialog>}
         </div>
       </div>
       {currentTime && <ReservationPage user={user} setReserveOpen={setReserveOpen} reserveOpen={reserveOpen} currentTime={currentTime} />}
-      {openAlert&&<Dialog open={Boolean(openAlert)} onClose={() => setOpenAlert(false)}>
+      {openAlert && <Dialog open={Boolean(openAlert)} onClose={() => setOpenAlert(false)}>
         <DialogTitle id="alert-dialog-title">{AlertContent[openAlert]?.title}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">

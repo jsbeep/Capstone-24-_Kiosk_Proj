@@ -119,7 +119,6 @@ function AdminPage({ user, setReserveOpen, reserveOpen, currentTime }) {
         await updateMultipleDays([currentTime.day]);
       } else await updateMultipleDays(['day1', 'day2', 'day3']);
 
-      console.log(`유저 '${user.id}' 예약정보 인덱스 추가- ${currentTime.day}:${currentTime.index}~${currentTime.index + selectedTime} `);
     } catch (error) {
       console.error("문서 수정 오류: ", error);
     }

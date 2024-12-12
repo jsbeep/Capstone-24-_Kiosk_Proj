@@ -5,7 +5,7 @@ admin.initializeApp({
     credential: admin.credential.cert(require("../../serviceAccountKey.json")),
     databaseURL: "https://test-4d484.firebaseio.com"  // Firestore URL
 });
-  
+
 const db = admin.firestore();
 const app = express();
 
@@ -26,10 +26,11 @@ const IndexToTime = function (index) {
 const TimeToIndex = function (time) {
     const [hours, minutes] = time.split(':').map(Number);  // 시간을 ':' 기준으로 분리하고 숫자로 변환
     const index = (hours - 6) * 2 + (minutes === 30 ? 1 : 0);  // 06:00부터 시작하는 인덱스 계산
-    return index<0 ? 0 : index;
+    return index < 0 ? 0 : index;
 };
 
 const docRef_room = db.collection("test").doc("room");
+const docRef_open = db.collection("test").doc("open");
 
 const monitorAndUpdate = async () => {
     try {
@@ -38,12 +39,12 @@ const monitorAndUpdate = async () => {
 
         console.log(currentTime, currentTimeIndex, IndexToTime(currentTimeIndex))
         // Firebase 데이터 업데이트
-        await docRef_room.update({ 
+        await docRef_room.update({
             // currentTime: currentTime,
-            currentTimeIndex: currentTimeIndex+1
+            currentTimeIndex: currentTimeIndex + 1
         });
 
-        if (!currentTimeIndex){
+        if (!currentTimeIndex) {
             let current_room = (await docRef_room.get()).data();
             Object.keys(current_room).forEach(key => {
                 if (['A', 'B', 'C'].includes(key)) {
@@ -52,9 +53,9 @@ const monitorAndUpdate = async () => {
                 }
             });
             docRef_room.update(current_room).then(() => {
-            console.log("key 값이 성공적으로 업데이트되었습니다.");
+                console.log("key 값이 성공적으로 업데이트되었습니다1.");
             }).catch((error) => {
-            console.error("key 업데이트 중 오류:", error);
+                console.error("key 업데이트 중 오류:", error);
             });
         }
 
@@ -68,28 +69,33 @@ const snapshotUpdate = async () => {
     try {
         const currentTime = getCurrentTime();
         const currentTimeIndex = TimeToIndex(currentTime);
+        const fieldsToUpdate = ['A', 'B', 'C']; 
 
         docRef_room.onSnapshot((doc) => {
-        if (doc.exists && currentTimeIndex) {
-            let current_room = doc.data();
+            if (doc.exists && currentTimeIndex) {
+                let current_room = doc.data();
 
-            Object.keys(current_room).forEach(key => {
-                // 'A', 'B', 'C'만 처리
-                if (['A', 'B', 'C'].includes(key)) {
-                  // Reserve 배열의 처음 10개 인덱스를 확인하고 값이 0이면 2로 변경
-                  current_room[key].Reserve.day1 = current_room[key].Reserve.day1.map((value, index) => 
-                    index < current_room['currentTimeIndex'] && value === 0 ? 2 : value
-                  );
-                }
-              });
+                Object.keys(current_room).forEach(key => {
+                    // 'A', 'B', 'C'만 처리
+                    if (fieldsToUpdate.includes(key)) {
+                        // Reserve 배열의 처음 10개 인덱스를 확인하고 값이 0이면 2로 변경
+                        current_room[key].Reserve.day1 = current_room[key].Reserve.day1.map((value, index) =>
+                            index < current_room['currentTimeIndex'] && value === 0 ? 2 : value
+                        );
+                    }
+                });
 
-            // 'key' 업데이트
-            docRef_room.update(current_room).then(() => {
-            console.log("key 값이 성공적으로 업데이트되었습니다.");
-            }).catch((error) => {
-            console.error("key 업데이트 중 오류:", error);
-            });
-        }
+                // 'key' 업데이트
+                docRef_room.update(current_room).then(() => {
+                    console.log("key 값이 성공적으로 업데이트되었습니다2.");
+                }).catch((error) => {
+                    console.error("key 업데이트 중 오류:", error);
+                });
+
+                const updates = {}; 
+                fieldsToUpdate.forEach(field => { updates[field] = !current_room[field].In_use && current_room[field].Reserve.day1[current_room['currentTimeIndex']]!==2; }); 
+                docRef_open.update(updates);
+            }
         });
     } catch (error) {
         console.error("Firestore 실시간 업데이트 감지 중 오류:", error);
