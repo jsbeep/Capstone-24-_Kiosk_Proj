@@ -88,7 +88,7 @@ const messagesEndRef = useRef(null);
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'space-start',
-          padding: 2,
+          padding: 1,
           borderBottom: "1px solid #ccc",
           backgroundColor: "#f9f9f9",
         }}
@@ -109,10 +109,13 @@ const messagesEndRef = useRef(null);
                 // marginBottom: 1,
                 padding: 1,
                 pr: 3,
+                mb: 0,
+                pb:0.5,
+                pt:0.5
             }}
             >
             {/* 프로필과 이름 부분 */}
-            <Box sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
+            <Box sx={{ display: "flex", alignItems: "center" }}>
               <IconButton
                 sx={{ marginRight: 1 }}
                 size="small"
@@ -128,6 +131,7 @@ const messagesEndRef = useRef(null);
             {/* 메시지 내용 */}
             <Typography variant="body2" sx={{ 
                 p:2,
+                fontSize: 16,
                 marginLeft: 4,     
                 borderRadius: 5,           
                 backgroundColor: msg.sender[0] === "_" ? "#f0f0f0" : "#cce7ff",

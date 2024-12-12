@@ -8,6 +8,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
 
 // import IconButton from '@mui/material/IconButton';
 // import InputLabel from '@mui/material/InputLabel';
@@ -72,6 +73,7 @@ function MyPage({user, logoutfunc, setMyPageOpen, myPageOpen}) {
         }}
       >
         <Button
+          disableElevation
           variant='contained'
           size={winsize ? 'large' : 'medium'}
           onClick={()=>{setMyPageOpen(false); logoutfunc()}}
@@ -96,56 +98,24 @@ function MyPage({user, logoutfunc, setMyPageOpen, myPageOpen}) {
         <DialogContent sx={{
           display: 'flex', 
           flexDirection: 'column', 
-          marginTop:'40px',
+          // marginTop:'40px',
         }}>
-          <DialogContentText sx={{ color: '#3c59a3' }}>
-            You can set my maximum width and whether to adapt or not.
-          </DialogContentText>
-            <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '250px' }}>
-              <TextField
-                variant='filled'
-                margin="normal"
-                fullWidth
-                id="Id"
-                inputProps={{ inputMode: 'numeric' }}
-                label="피드백 보내기"
-                name="Id"
-                autoComplete="Id"
-                autoFocus
-                value={userId}
-                onChange={(e) => setUserID(e.target.value)}
-                // error={!!error}
-              />
+          <Box sx={{
+            width:'100%',
+            height: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'end',
+            m:0,
+            p:0
+          }}>
+            <SentimentDissatisfiedIcon sx={{
+              fontSize: 600,
+              color:'#ececec'
+            }}/>
 
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 3,
-                  bgcolor: '#ffffff',
-                  color: '#092979',
-                  height: '45px'
-                 }}
-              >
-                보내기
-              </Button>
+          </Box>
 
-              {/* {error && (
-                <Typography color="error" variant="body2" align="center">
-                  {error}
-                </Typography>
-              )} */}
-            </Box>
-              <Grid2 container spacing={3}>
-                <Grid2>
-                  <Link href="#" variant="body2">
-                    PIN 번호 찾기</Link>
-                </Grid2>
-                <Grid2>
-                  <Link href="#" variant="body2">가입하기
-                  </Link>
-                </Grid2>
-              </Grid2>
         </DialogContent>
         <DialogActions>
           <Button sx={{
