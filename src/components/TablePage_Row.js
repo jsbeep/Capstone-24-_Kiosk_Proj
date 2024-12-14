@@ -264,9 +264,10 @@ function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation, 
               minHeight: '50px',
               width: 'auto',
             }}>
-              {times.map((time) => (
+              {times.map((time, index) => (
                 <Box
                   key={time}
+                  ref={(index-7 === getCurrentIndex()) ? targetRef : null}
                   sx={{
                     backgroundColor: '#f6f7f8',
                     justifyContent: 'center',
@@ -305,7 +306,6 @@ function TablePageRow({ user, setTablePageOpen, tablePageOpen, openReservation, 
                     }}>
                     {days.Reserve[selectedDay].map((status, index) => (
                       <Box
-                        ref={(days === 'day1' && index + 5 === getCurrentIndex() + 5) ? targetRef : null}
                         key={index}
                         onClick={(Boolean(status) && !admin) ? null : (user ? () => openReservation({
                           month: today.getMonth() + 1,
