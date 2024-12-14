@@ -80,7 +80,7 @@ const snapshotUpdate = async () => {
                     if (fieldsToUpdate.includes(key)) {
                         // Reserve 배열의 처음 10개 인덱스를 확인하고 값이 0이면 2로 변경
                         current_room[key].Reserve.day1 = current_room[key].Reserve.day1.map((value, index) =>
-                            index <= current_room['currentTimeIndex'] - 1 && value === 0 ? 2 : value
+                            index <= currentTimeIndex && value === 0 ? 2 : value
                         );
                     }
                 });
