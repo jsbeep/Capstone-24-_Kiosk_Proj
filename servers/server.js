@@ -2,7 +2,7 @@ const express = require("express");
 const admin = require("firebase-admin");
 
 admin.initializeApp({
-    credential: admin.credential.cert(require("../../serviceAccountKey.json")),
+    credential: admin.credential.cert(require("../src/test/serviceAccountKey.json")),
     databaseURL: "https://test-4d484.firebaseio.com"  // Firestore URL
 });
 
