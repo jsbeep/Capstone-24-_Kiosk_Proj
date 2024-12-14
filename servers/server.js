@@ -2,7 +2,7 @@ const express = require("express");
 const admin = require("firebase-admin");
 
 admin.initializeApp({
-    credential: admin.credential.cert(require("../src/test/serviceAccountKey.json")),
+    credential: admin.credential.cert(require("../serviceAccountKey.json")),
     databaseURL: "https://test-4d484.firebaseio.com"  // Firestore URL
 });
 
@@ -80,7 +80,7 @@ const snapshotUpdate = async () => {
                     if (fieldsToUpdate.includes(key)) {
                         // Reserve 배열의 처음 10개 인덱스를 확인하고 값이 0이면 2로 변경
                         current_room[key].Reserve.day1 = current_room[key].Reserve.day1.map((value, index) =>
-                            index < current_room['currentTimeIndex'] - 1 && value === 0 ? 2 : value
+                            index <= current_room['currentTimeIndex'] - 1 && value === 0 ? 2 : value
                         );
                     }
                 });
@@ -107,7 +107,7 @@ setInterval(monitorAndUpdate, 5000);
 snapshotUpdate();
 
 // 서버 실행
-const PORT = 3000;
+const PORT = 3001;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

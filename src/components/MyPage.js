@@ -1,12 +1,12 @@
 import * as React from 'react';
-import { useState } from 'react';
+// import { useState } from 'react';
 // import { dummy } from '../test/example.js';
 import './Login.css';
 
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
+// import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
 
@@ -16,34 +16,38 @@ import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied
 // import FormControl from '@mui/material/FormControl';
 // import Visibility from '@mui/icons-material/Visibility';
 // import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { TextField, Button, Grid2, Box, Link } from '@mui/material';
+import { 
+  // TextField, Grid2, Link,
+  Button, Box } from '@mui/material';
 
 
-function MyPage({user, logoutfunc, setMyPageOpen, myPageOpen}) {
+function MyPage({
+  // user, 
+  logoutfunc, setMyPageOpen, myPageOpen}) {
   
-  const [userId, setUserID] = useState('');
+  // const [userId, setUserID] = useState('');
   // const [password, setPassword] = useState('');
   // const [error, setError] = useState('');
   // const [showPassword, setShowPassword] = useState(false);
   const winsize = window.innerWidth + window.innerHeight;
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  // const handleSubmit = (event) => {
+  //   event.preventDefault();
 
-    // if (!userId || !password) {
-    //   setError('모든 필드를 채워주세요.');
-    //   return;
-    // }
+  //   if (!userId || !password) {
+  //     setError('모든 필드를 채워주세요.');
+  //     return;
+  //   }
 
-    // if (userId in dummy.account && password === dummy.account[userId].pwd) {  // 비밀번호 인증
-    //   setError('');
-    //   alert('로그인 성공!');
-    //   logoutfunc(userId)
-    //   setMyPageOpen(false);
-    // } else {
-    //   setError('이메일 또는 PIN 번호가 잘못되었습니다.');
-    // }
-  };
+  //   if (userId in dummy.account && password === dummy.account[userId].pwd) {  // 비밀번호 인증
+  //     setError('');
+  //     alert('로그인 성공!');
+  //     logoutfunc(userId)
+  //     setMyPageOpen(false);
+  //   } else {
+  //     setError('이메일 또는 PIN 번호가 잘못되었습니다.');
+  //   }
+  // };
 
   // const handleClickShowPassword = () => setShowPassword((show) => !show);
 
