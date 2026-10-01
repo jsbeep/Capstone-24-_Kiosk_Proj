@@ -1,3 +1,21 @@
+## 디지털정보관 키 보관함 키오스크
+국립군산대학교 디지털정보관 1층 Turing Hall에 배치된 스터디룸(알파, 베타, 감마)의 열쇠를 무인대여 관리하는 시스템 개발 프로젝트이다.
+
+### 사용 부품
+- 라즈베리파이
+- 아두이노
+- 서보모터
+- RFID 태그 / 리더기 (X) -> 인식 오류
+- 7인치 LCD 모니터 (X) -> 회로 고장
+
+### 만들어야 하는 이유
+기존 관리한 유인 시스템은 정해진 시간 및 관리의 부재 등의 문제점이 있었다.
+해당 키오스크를 통해 열쇠를 무인 대여할 수 있음으로 하여 관리를 원활하게 할 수 있도록 도움케 한다.
+
+> 24학년도 2학기 캡스톤디자인(창의형(유형)) 수업으로 학교에서 예산을 지원받아 진행된 프로젝트입니다.
+>
+> https://github.com/1DONG2/Capstone-24-_Kiosk_Proj
+
 <code>npm install</code>
 <br/>
 [<code>serviceAccountKey.json</code>](https://file.notion.so/f/f/633dd8f4-aa62-4272-8880-b3717709ab02/e0f6790e-72c6-456c-9108-bd283cdde7e1/serviceAccountKey.json?table=block&id=1595d60d-6f10-802d-8562-f5d7c18b0b96&spaceId=633dd8f4-aa62-4272-8880-b3717709ab02&expirationTimestamp=1734307200000&signature=L_NFDC0vWmDVQDq6UHufHWLDKIbXMZIyrTZ6rUUKN8w&downloadName=serviceAccountKey.json).
